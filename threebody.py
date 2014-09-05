@@ -7,6 +7,8 @@ from api.tfoll import *
 
 from config import accounts
 
+import gevent
+
 class ThreeBody(object):
 
     TRADE_STATUS_NO = 0
@@ -42,10 +44,19 @@ class ThreeBody(object):
             }
         return res
 
-    def get_user_info(self):
+    def get_okcoin_info(self):
         self.ok_info = self.okcoin.user_info()
+    def get_btce_info(self):
         self.btce_info = self.btce.user_info()
+    def get_tfoll_info(self):
         self.tfoll_info = self.tfoll.user_info()
+
+    def get_user_info(self):
+        jobs = [gevent.spawn(self.get_okcoin_info), \
+                gevent.spawn(self.get_btce_info), \
+                gevent.spawn(self.get_tfoll_info)]
+        gevent.joinall(jobs)
+
 
     def check_trade(self, status):
         if status['rate'] < 1.001:
@@ -54,10 +65,18 @@ class ThreeBody(object):
         src,dst = status['direct'].split("_")
         if getattr(self, '%s_depth' % src):
             pass
-    def search(self):
+    def get_okcoin_depth(self):
         self.ok_depth = self.okcoin.depth(symbol='ltc_cny')
+    def get_btce_depth(self):
         self.btce_depth = self.btce.depth(symbol='ltc_usd')
+    def get_tfoll_depth(self):
         self.tfoll_depth = self.tfoll.depth(symbol='ltc_cny')
+
+    def search(self):
+        jobs = [gevent.spawn(self.get_okcoin_depth), \
+                gevent.spawn(self.get_btce_depth), \
+                gevent.spawn(self.get_tfoll_depth)]
+        gevent.joinall(jobs)
         
         self.btce_depth['sell'][0] = self.btce_depth['sell'][0] * USD_TO_RMB
         self.btce_depth['buy'][0] = self.btce_depth['buy'][0] * USD_TO_RMB
