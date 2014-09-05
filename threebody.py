@@ -9,6 +9,7 @@ from config import accounts
 
 import gevent.monkey
 gevent.monkey.patch_socket()
+gevent.monkey.patch_ssl()
 
 from gevent.pool import Pool
 
@@ -22,7 +23,7 @@ class ThreeBody(object):
 
     def __init__(self):
         self.okcoin = OkcoinTrade(accounts.okcoin)
-        #self.btce = BtceTrade(accounts.btce)
+        self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
         self._concurrency = 3
 
@@ -62,7 +63,7 @@ class ThreeBody(object):
         pool = Pool(self._concurrency)
         pool.spawn(self.get_tfoll_info)
         pool.spawn(self.get_okcoin_info)
-        #pool.spawn(self.get_btce_info)
+        pool.spawn(self.get_btce_info)
         pool.join()
 
 
@@ -114,7 +115,7 @@ class ThreeBody(object):
             cur = int(time.time())
             print '-----------------------%s-----------------------' % (cur - pre)
             self.get_user_info()
-            #self.search()
+            self.search()
             print getattr(self, 'ok_depth')
             pre = cur
 
