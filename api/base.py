@@ -32,10 +32,21 @@ class BaseTrade(object):
     def depth(self, symbol='ltc_cny'):
         NotImplementedError("please implement depth api")
 
+    @property
+    def can_withdrow(self):
+        return False
 
     def web_login(self):
         pass
 
+   # info = {
+   #     "funds": {
+   #         "freezed": {
+   #         },
+   #         "free": {
+   #         }
+   #     }
+   # }
     def user_info(self):
         pass
 

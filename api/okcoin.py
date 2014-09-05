@@ -10,7 +10,6 @@ import logging
 import requests
 import random
 import time
-import hashlib
 import json
 
 from collections import OrderedDict                                                                                                                       
