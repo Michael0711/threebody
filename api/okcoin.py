@@ -94,7 +94,7 @@ class OkcoinTrade(BaseTrade):
         except Exception, e:
             raise DepthFailedException("depth failed! e[%s]" % e)
 
-    def userinfo(self):
+    def user_info(self):
         info = {
             "funds": {
                 "freezed": {
