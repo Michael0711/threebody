@@ -7,7 +7,10 @@ from api.tfoll import *
 
 from config import accounts
 
-import gevent
+import gevent.monkey
+gevent.monkey.patch_socket()
+
+from gevent.pool import Pool
 
 class ThreeBody(object):
 
@@ -19,8 +22,9 @@ class ThreeBody(object):
 
     def __init__(self):
         self.okcoin = OkcoinTrade(accounts.okcoin)
-        self.btce = BtceTrade(accounts.btce)
+        #self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
+        self._concurrency = 3
 
     def get_status(self, depth1, depth2, name1, name2):
         direct1 = '%s_%s' % (name2, name1)
@@ -46,16 +50,20 @@ class ThreeBody(object):
 
     def get_okcoin_info(self):
         self.ok_info = self.okcoin.user_info()
+        print 1
     def get_btce_info(self):
         self.btce_info = self.btce.user_info()
+        print 2
     def get_tfoll_info(self):
         self.tfoll_info = self.tfoll.user_info()
+        print 3
 
     def get_user_info(self):
-        jobs = [gevent.spawn(self.get_okcoin_info), \
-                gevent.spawn(self.get_btce_info), \
-                gevent.spawn(self.get_tfoll_info)]
-        gevent.joinall(jobs)
+        pool = Pool(self._concurrency)
+        pool.spawn(self.get_tfoll_info)
+        pool.spawn(self.get_okcoin_info)
+        #pool.spawn(self.get_btce_info)
+        pool.join()
 
 
     def check_trade(self, status):
@@ -73,10 +81,11 @@ class ThreeBody(object):
         self.tfoll_depth = self.tfoll.depth(symbol='ltc_cny')
 
     def search(self):
-        jobs = [gevent.spawn(self.get_okcoin_depth), \
-                gevent.spawn(self.get_btce_depth), \
-                gevent.spawn(self.get_tfoll_depth)]
-        gevent.joinall(jobs)
+        pool = Pool(self._concurrency)
+        pool.spawn(self.get_okcoin_depth)
+        pool.spawn(self.get_btce_depth)
+        pool.spawn(self.get_tfoll_depth)
+        pool.join()
         
         self.btce_depth['sell'][0] = self.btce_depth['sell'][0] * USD_TO_RMB
         self.btce_depth['buy'][0] = self.btce_depth['buy'][0] * USD_TO_RMB
@@ -105,7 +114,7 @@ class ThreeBody(object):
             cur = int(time.time())
             print '-----------------------%s-----------------------' % (cur - pre)
             self.get_user_info()
-            self.search()
+            #self.search()
             print getattr(self, 'ok_depth')
             pre = cur
 
