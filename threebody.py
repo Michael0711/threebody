@@ -25,7 +25,7 @@ class ThreeBody(object):
         self.okcoin = OkcoinTrade(accounts.okcoin)
         self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
-        self._concurrency = 3
+        self._concurrency = 10
 
     def get_status(self, depth1, depth2, name1, name2):
         direct1 = '%s_%s' % (name2, name1)
@@ -51,21 +51,15 @@ class ThreeBody(object):
 
     def get_okcoin_info(self):
         self.ok_info = self.okcoin.user_info()
-        print 1
+        print 4
+        raise Exception('get_okcoin_info')
+
     def get_btce_info(self):
         self.btce_info = self.btce.user_info()
-        print 2
+        print 5
     def get_tfoll_info(self):
         self.tfoll_info = self.tfoll.user_info()
-        print 3
-
-    def get_user_info(self):
-        pool = Pool(self._concurrency)
-        pool.spawn(self.get_tfoll_info)
-        pool.spawn(self.get_okcoin_info)
-        pool.spawn(self.get_btce_info)
-        pool.join()
-
+        print 6
 
     def check_trade(self, status):
         if status['rate'] < 1.001:
@@ -76,17 +70,51 @@ class ThreeBody(object):
             pass
     def get_okcoin_depth(self):
         self.ok_depth = self.okcoin.depth(symbol='ltc_cny')
+        print 1
     def get_btce_depth(self):
         self.btce_depth = self.btce.depth(symbol='ltc_usd')
+        print 2
     def get_tfoll_depth(self):
         self.tfoll_depth = self.tfoll.depth(symbol='ltc_cny')
+        print 3
+
+    def clear(self):
+        self.ok_depth = None
+        self.btce_depth = None
+        self.tfoll_depth = None
+        self.ok_info = None
+        self.btce_info = None
+        self.tfoll_info = None
+
+    def check(self):
+        if self.ok_depth == None:
+            return False
+        if self.btce_depth == None:
+            return False
+        if self.tfoll_depth == None:
+            return False
+        if self.ok_info == None:
+            return False
+        if self.btce_info == None:
+            return False
+        if self.tfoll_info == None:
+            return False
+        return True
 
     def search(self):
+        self.clear()
         pool = Pool(self._concurrency)
+        pool.spawn(self.get_tfoll_info)
+        pool.spawn(self.get_okcoin_info)
+        pool.spawn(self.get_btce_info)
         pool.spawn(self.get_okcoin_depth)
         pool.spawn(self.get_btce_depth)
         pool.spawn(self.get_tfoll_depth)
         pool.join()
+
+        print 'here'
+        if not self.check():
+            raise Exception("ugly")
         
         self.btce_depth['sell'][0] = self.btce_depth['sell'][0] * USD_TO_RMB
         self.btce_depth['buy'][0] = self.btce_depth['buy'][0] * USD_TO_RMB
@@ -112,12 +140,14 @@ class ThreeBody(object):
     def run(self):
         pre = int(time.time())
         while True:
-            cur = int(time.time())
-            print '-----------------------%s-----------------------' % (cur - pre)
-            self.get_user_info()
-            self.search()
-            print getattr(self, 'ok_depth')
-            pre = cur
+            try:
+                cur = int(time.time())
+                print '-----------------------%s-----------------------' % (cur - pre)
+                self.search()
+                print getattr(self, 'ok_depth')
+                pre = cur
+            except Exception as e:
+                print e
 
 if __name__ == '__main__':
     three_body = ThreeBody()
