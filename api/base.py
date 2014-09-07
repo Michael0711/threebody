@@ -24,6 +24,9 @@ class WithdrawException(Exception):
 class PasswordErrorException(Exception):
     pass
 
+class SeriousErrorException(Exception):
+    pass
+
 class BaseTrade(object):
     def __init__(self, settings):
         for key in settings:

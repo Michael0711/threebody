@@ -8,6 +8,7 @@ from gevent.pool import Pool
 from api.okcoin import *
 from api.btce import *
 from api.tfoll import *
+from api.base import *
 from lib.log import *
 
 from config import accounts
@@ -76,7 +77,7 @@ class ThreeBody(object):
         self.tfoll_info = self.tfoll.user_info()
         self.tfoll_info['funds']['free']['ltc'] = float(self.tfoll_info['funds']['free']['ltc']) - 0.5
         self.tfoll_info['funds']['free']['btc'] = float(self.tfoll_info['funds']['free']['btc']) 
-        self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny']) - 5
+        self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny']) - 50
 
     def get_okcoin_depth(self):
         self.okcoin_depth = self.okcoin.depth(symbol='ltc_cny')
@@ -168,7 +169,7 @@ class ThreeBody(object):
                 total_cny = total_cny + info['funds']['free']['cny']
                 total_ltc = total_ltc + info['funds']['free']['ltc']
                 total_btc = total_btc + info['funds']['free']['btc']
-                log_str = '%s[%s,%s,%s] %s' % (account_name, info['funds']['free']['cny'],\
+                log_str = '%s[%s,%s,%s] %s' % (account_name, int(info['funds']['free']['cny']),\
                                             info['funds']['free']['ltc'],\
                                             info['funds']['free']['btc'],\
                                             log_str)
@@ -205,7 +206,25 @@ class ThreeBody(object):
             log_str = "%s %s" % (log_str, item_log)
         Log.info(log_str)
 
+    def sell(self, trader, rate, amount, trade_name):
+        if trade_name == 'btce':
+            trader.trade(type='sell', rate=rate / USD_TO_RMB, \
+                            amount=amount, symbol='ltc_usd')
+        else:
+            trader.trade(type='sell', rate=rate, \
+                            amount=amount, symbol='ltc_cny')
+
+    def buy(self, trader, rate, amount, trade_name):
+        if trade_name == 'btce':
+            trader.trade(type='buy', rate=rate / USD_TO_RMB, \
+                            amount=amount * 1.002, symbol='ltc_usd')
+        else:
+            trader.trade(type='buy', rate=rate, \
+                            amount=amount, symbol='ltc_cny')
+
     def trade(self):
+        MORE = 1.05
+        LESS = 0.95
         for item in self.status_list:
             if item['can_trade'] == self.TRADE_STATUS_YES:
                 src,dst = item['direct'].split("_")
@@ -215,25 +234,20 @@ class ThreeBody(object):
                 dst_info = getattr(self, "%s_info" % dst)
                 src_trade = getattr(self, src)
                 dst_trade = getattr(self, dst)
-                amount = 2
+                amount = 5
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
-                amount = min(amount, dst_info['funds']['free']['cny'] / dst_depth['sell'][0])
-
-                if src == 'btce':
-                    src_trade.trade(type='sell', rate=src_depth['buy'][0]  / USD_TO_RMB * 0.9, \
-                                    amount=amount, symbol='ltc_usd')
-                else:
-                    src_trade.trade(type='sell', rate=src_depth['buy'][0] * 0.9, \
-                                    amount=amount, symbol='ltc_cny')
-                if dst == 'btce':
-                    dst_trade.trade(type='buy', rate=dst_depth['sell'][0]  / USD_TO_RMB * 1.1, \
-                                    amount=amount * 1.002, symbol='ltc_usd')
-                else:
-                    dst_trade.trade(type='buy', rate=dst_depth['sell'][0] * 1.1, \
-                                    amount=amount, symbol='ltc_cny')
+                amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )
 
                 Log.info("trade[%s %s] src_depth[%s] dst_depth[%s]" % (item['direct'], amount, src_depth, dst_depth))
+
+                pool = Pool(self._concurrency)
+                pool.spawn(self.sell, src_trade, src_depth['buy'][0] * LESS, amount, src)
+                pool.spawn(self.buy, dst_trade, dst_depth['sell'][0] * MORE, amount, dst)
+                pool.join()
+
+                if src == 'tfoll' or dst == 'tfoll':
+                    time.sleep(0.5)
                 break
             else:
                 continue
@@ -253,6 +267,10 @@ class ThreeBody(object):
                 self.search()
                 self.trade()
                 pre = cur
+                time.sleep(0.5)
+            except SeriousErrorException as e:
+                Log.error(e)
+                break
             except Exception as e:
                 Log.error(e)
 

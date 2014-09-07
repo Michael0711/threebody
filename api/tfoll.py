@@ -46,6 +46,8 @@ class TfollTrade(BaseTrade):
             raise Exception("Failed to get %s, resp[%s]]" % (prefix, resp))
         if  error != '000' and error != '' and error != None:
             raise Exception("Failed to get %s, resp[%s]]" % (prefix, resp))
+        if error == '203':
+            raise SeriousErrorException("tfoll 账户出现负数")
 
 
         return resp['result']
@@ -121,6 +123,8 @@ class TfollTrade(BaseTrade):
                 'buy' : resp['bids'][0],
                 'sell' : resp['asks'][0]
             }
+            if resp['bids'][0] > resp['asks'][0]:
+                raise DepthFailedException('tfoll get depth error [%s]' % res)
             return res
         except Exception as e:
             raise DepthFailedException('tfoll get depth failed [%s]' % e)
