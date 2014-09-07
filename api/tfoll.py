@@ -39,7 +39,7 @@ class TfollTrade(BaseTrade):
             'token' : self._token
         })
         url = '%s?%s' % (prefix, urllib.urlencode(params))
-        resp = requests.get(url).json()
+        resp = requests.get(url, **HTTP_ARGS).json()
 
         error = resp.get('error', None)
         if resp.get('uv', None) != '1' or resp.get('oa', None) != '004':

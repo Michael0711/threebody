@@ -36,7 +36,7 @@ class BtceTrade(BaseTrade) :
         self.session = requests.Session()
         self.session.headers = DEFAULT_HEADERS
         #{u'success': 0, u'error': u'invalid nonce parameter; on key:2999999698, you sent:0, you should send:2999999699'}
-        info = self.user_info()
+        info = self.user_info(no_exception=True)
         REX_NONCE = r'you should send:(\d*)'
         self._nonce = int(re.search(REX_NONCE,info['error']).group(1)) - 1
 
@@ -68,7 +68,7 @@ class BtceTrade(BaseTrade) :
             return False
 
 
-    def user_info(self) :
+    def user_info(self, no_exception=False) :
         url = self._host + '/tapi/'
         post_param = {
             'method' : 'getInfo',
@@ -82,9 +82,17 @@ class BtceTrade(BaseTrade) :
         }
         try :
             r = requests.post(url, data=post_param, headers=headers, timeout=self.TIMEOUT)
-            logging.debug('url[%s] resp[%s]' % (url, r.text))
             resp = r.json()
-            return resp
+            if resp.get("error", None) and no_exception == False:
+                raise UserInfoFailedException("btce[%s]" % resp)
+            elif resp.get("error", None) and no_exception == True:
+                return resp
+            res = {
+                'funds' : {
+                    'free' : resp['return']['funds']
+                }
+            }
+            return res
         except Exception, e:
             logging.warning("trade failed! e[%s]" % e)
             return False
@@ -272,8 +280,9 @@ if __name__ == "__main__" :
     logging.getLogger('requests').setLevel(logging.ERROR)
 
     e = BtceTrade(accounts.btce)
-    print e.depth(symbol='ltc_usd')
-    #print e.user_info()
+    #print e.depth(symbol='ltc_usd')
+    print e.user_info()
+    print e.trade(type='buy', rate='6.0', amount='2', symbol='ltc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
     #print e.withdraw_btc(5, '13r8HATkywXL8tHZrZK54Ysuzz8GdqtM2a')

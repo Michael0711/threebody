@@ -114,11 +114,7 @@ class OkcoinTrade(BaseTrade):
         info['funds']['freezed']['btc'] = float("".join(nodes[4].text().split(",")))
         info['funds']['freezed']['ltc'] = float("".join(nodes[5].text().split(",")))
 
-        resp = {
-            'info' : info,
-            'result' : True
-        }
-        return resp
+        return info
 
     def withdrow_btc(self, amount, target_address):
         return self._withdraw(amount, target_address, 0)

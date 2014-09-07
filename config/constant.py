@@ -18,4 +18,4 @@ DEFAULT_HEADERS = {
     "X-Requested-With":"XMLHttpRequest"
 }
 
-USD_TO_RMB = 6.5
+USD_TO_RMB = 6.15
