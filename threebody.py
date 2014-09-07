@@ -169,11 +169,10 @@ class ThreeBody(object):
                 total_cny = total_cny + info['funds']['free']['cny']
                 total_ltc = total_ltc + info['funds']['free']['ltc']
                 total_btc = total_btc + info['funds']['free']['btc']
-                log_str = '%s[%s,%s,%s] %s' % (account_name, int(info['funds']['free']['cny']),\
-                                            info['funds']['free']['ltc'],\
-                                            info['funds']['free']['btc'],\
+                log_str = '%s[%s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
+                                            Log.green(info['funds']['free']['ltc']),\
                                             log_str)
-        log_str = '[%s,%s,%s] %s' % (Log.green(total_cny), total_ltc, total_btc, log_str)
+        log_str = '[%s %s %s] %s' % (Log.green(total_cny), total_ltc, total_btc, log_str)
         Log.info(log_str)
 
     def search(self):
