@@ -42,6 +42,9 @@ class BaseTrade(object):
     def web_login(self):
         pass
 
+    def trade(self, type, rate, amount, symbol='ltc_cny'):
+        NotImplementedError("please implement trade api")
+
    # info = {
    #     "funds": {
    #         "freezed": {
@@ -51,5 +54,5 @@ class BaseTrade(object):
    #     }
    # }
     def user_info(self):
-        pass
+        NotImplementedError("please implement user_info api")
 

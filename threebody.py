@@ -1,14 +1,16 @@
 #!/usr/bin/python                                                               
 # -*- coding: utf-8 -*-
 import gevent.monkey
-gevent.monkey.patch_socket()
-gevent.monkey.patch_ssl()
+#gevent.monkey.patch_socket()
+#gevent.monkey.patch_ssl()
+gevent.monkey.patch_all()
 from gevent.pool import Pool
 
 from api.okcoin import *
 from api.btce import *
 from api.tfoll import *
 from api.base import *
+from api.btcchina import *
 from lib.log import *
 
 from config import accounts
@@ -27,7 +29,8 @@ class ThreeBody(object):
         self.okcoin = OkcoinTrade(accounts.okcoin)
         self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
-        self.account_list = ['okcoin', 'btce', 'tfoll']
+        self.btcchina = BtcchinaTrade(accounts.btcchina)
+        self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina']
         self._concurrency = 10
 
     def set_trade_status(self, trade_name, status=False):
@@ -64,14 +67,20 @@ class ThreeBody(object):
         self.okcoin_info = self.okcoin.user_info()
         self.okcoin_info['funds']['free']['ltc'] = float(self.okcoin_info['funds']['free']['ltc']) - 0.5
         self.okcoin_info['funds']['free']['btc'] = float(self.okcoin_info['funds']['free']['btc'])
-        self.okcoin_info['funds']['free']['cny'] = float(self.okcoin_info['funds']['free']['cny']) - 5
+        self.okcoin_info['funds']['free']['cny'] = float(self.okcoin_info['funds']['free']['cny']) - 50
+
+    def get_btcchina_info(self):
+        self.btcchina_info = self.btcchina.user_info()
+        self.btcchina_info['funds']['free']['ltc'] = float(self.btcchina_info['funds']['free']['ltc']) - 0.5
+        self.btcchina_info['funds']['free']['btc'] = float(self.btcchina_info['funds']['free']['btc'])
+        self.btcchina_info['funds']['free']['cny'] = float(self.btcchina_info['funds']['free']['cny']) - 50
 
     def get_btce_info(self):
         self.btce_info = self.btce.user_info()
         self.btce_info['funds']['free']['ltc'] = float(self.btce_info['funds']['free']['ltc']) - 0.5
         self.btce_info['funds']['free']['btc'] = float(self.btce_info['funds']['free']['btc'])
         self.btce_info['funds']['free']['usd'] = float(self.btce_info['funds']['free']['usd'])
-        self.btce_info['funds']['free']['cny'] = self.btce_info['funds']['free']['usd'] * USD_TO_RMB - 5
+        self.btce_info['funds']['free']['cny'] = self.btce_info['funds']['free']['usd'] * USD_TO_RMB - 50
 
     def get_tfoll_info(self):
         self.tfoll_info = self.tfoll.user_info()
@@ -85,6 +94,13 @@ class ThreeBody(object):
         self.okcoin_depth['sell'][1] = float(self.okcoin_depth['sell'][1])
         self.okcoin_depth['buy'][0] = float(self.okcoin_depth['buy'][0])
         self.okcoin_depth['buy'][1] = float(self.okcoin_depth['buy'][1])
+
+    def get_btcchina_depth(self):
+        self.btcchina_depth = self.btcchina.depth(symbol='ltc_cny')
+        self.btcchina_depth['sell'][0] = float(self.btcchina_depth['sell'][0])
+        self.btcchina_depth['sell'][1] = float(self.btcchina_depth['sell'][1])
+        self.btcchina_depth['buy'][0] = float(self.btcchina_depth['buy'][0])
+        self.btcchina_depth['buy'][1] = float(self.btcchina_depth['buy'][1])
 
     def get_btce_depth(self):
         self.btce_depth = self.btce.depth(symbol='ltc_usd')
@@ -107,9 +123,11 @@ class ThreeBody(object):
         self.okcoin_depth = None
         self.btce_depth = None
         self.tfoll_depth = None
+        self.btcchina_depth = None
         self.okcoin_info = None
         self.btce_info = None
         self.tfoll_info = None
+        self.btcchina_info = None
 
     def check_depth_and_info(self):
         if self.okcoin_depth == None or self.okcoin_info == None:
@@ -124,6 +142,10 @@ class ThreeBody(object):
             self.set_trade_status('tfoll', False)
         else:
             self.set_trade_status('tfoll', True)
+        if self.btcchina_depth == None or self.btcchina_info == None:
+            self.set_trade_status('btcchina', False)
+        else:
+            self.set_trade_status('btcchina', True)
 
     def check_trade(self, status):
         src,dst = status['direct'].split("_")
@@ -152,9 +174,11 @@ class ThreeBody(object):
         pool.spawn(self.get_tfoll_info)
         pool.spawn(self.get_okcoin_info)
         pool.spawn(self.get_btce_info)
+        pool.spawn(self.get_btcchina_info)
         pool.spawn(self.get_okcoin_depth)
         pool.spawn(self.get_btce_depth)
         pool.spawn(self.get_tfoll_depth)
+        pool.spawn(self.get_btcchina_depth)
         pool.join()
         self.check_depth_and_info()
 
@@ -177,12 +201,16 @@ class ThreeBody(object):
 
     def search(self):
         self.status_list = []
-        if self.get_trade_status('okcoin') and self.get_trade_status('btce'):
-            self.status_list.append(self.get_status(self.okcoin_depth, self.btce_depth, 'okcoin', 'btce'))
-        if self.get_trade_status("btce") and self.get_trade_status("tfoll"):
-            self.status_list.append(self.get_status(self.btce_depth, self.tfoll_depth, 'btce', 'tfoll'))
-        if self.get_trade_status("okcoin") and self.get_trade_status("tfoll"):
-            self.status_list.append(self.get_status(self.okcoin_depth, self.tfoll_depth, 'okcoin', 'tfoll'))
+
+        for i in xrange(len(self.account_list)):
+            for j in xrange(len(self.account_list)):
+                if j > i:
+                    account1 = self.account_list[i]
+                    account2 = self.account_list[j]
+                    if self.get_trade_status(account1) and self.get_trade_status(account2):
+                        self.status_list.append(self.get_status(getattr(self, "%s_depth" % account1), \
+                                                                getattr(self, "%s_depth" % account2), \
+                                                                account1, account2))
         self.status_list.sort(lambda a, b: int((b['rate'] - a['rate']) * 10000))
 
         for item in self.status_list:
@@ -276,3 +304,10 @@ class ThreeBody(object):
 if __name__ == '__main__':
     three_body = ThreeBody()
     three_body.run()
+    #btcchina = BtcchinaTrade(accounts.btcchina)
+    #print btcchina.user_info()
+    #print btcchina.depth(symbol='ltc_cny')
+   # pool = Pool(2)
+   # pool.spawn(btcchina.user_info)
+   # pool.spawn(btcchina.depth, 'ltc_cny')
+   # pool.join()
