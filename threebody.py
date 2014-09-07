@@ -61,22 +61,22 @@ class ThreeBody(object):
 
     def get_okcoin_info(self):
         self.okcoin_info = self.okcoin.user_info()
-        self.okcoin_info['funds']['free']['ltc'] = float(self.okcoin_info['funds']['free']['ltc'])
+        self.okcoin_info['funds']['free']['ltc'] = float(self.okcoin_info['funds']['free']['ltc']) - 0.5
         self.okcoin_info['funds']['free']['btc'] = float(self.okcoin_info['funds']['free']['btc'])
-        self.okcoin_info['funds']['free']['cny'] = float(self.okcoin_info['funds']['free']['cny'])
+        self.okcoin_info['funds']['free']['cny'] = float(self.okcoin_info['funds']['free']['cny']) - 5
 
     def get_btce_info(self):
         self.btce_info = self.btce.user_info()
-        self.btce_info['funds']['free']['ltc'] = float(self.btce_info['funds']['free']['ltc'])
+        self.btce_info['funds']['free']['ltc'] = float(self.btce_info['funds']['free']['ltc']) - 0.5
         self.btce_info['funds']['free']['btc'] = float(self.btce_info['funds']['free']['btc'])
         self.btce_info['funds']['free']['usd'] = float(self.btce_info['funds']['free']['usd'])
-        self.btce_info['funds']['free']['cny'] = self.btce_info['funds']['free']['usd'] * USD_TO_RMB
+        self.btce_info['funds']['free']['cny'] = self.btce_info['funds']['free']['usd'] * USD_TO_RMB - 5
 
     def get_tfoll_info(self):
         self.tfoll_info = self.tfoll.user_info()
-        self.tfoll_info['funds']['free']['ltc'] = float(self.tfoll_info['funds']['free']['ltc'])
-        self.tfoll_info['funds']['free']['btc'] = float(self.tfoll_info['funds']['free']['btc'])
-        self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny'])
+        self.tfoll_info['funds']['free']['ltc'] = float(self.tfoll_info['funds']['free']['ltc']) - 0.5
+        self.tfoll_info['funds']['free']['btc'] = float(self.tfoll_info['funds']['free']['btc']) 
+        self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny']) - 5
 
     def get_okcoin_depth(self):
         self.okcoin_depth = self.okcoin.depth(symbol='ltc_cny')
@@ -241,7 +241,7 @@ class ThreeBody(object):
 
 
     def run(self):
-        Log.init()
+        Log.init("threebody.log")
         pre = int(time.time())
         while True:
             try:

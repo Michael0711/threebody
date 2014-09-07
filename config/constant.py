@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 HTTP_ARGS = { 
-    'timeout': 10, 
+    'timeout': 4,
     'verify': False
 }
 DEFAULT_HEADERS = {                                                                                                                                       
