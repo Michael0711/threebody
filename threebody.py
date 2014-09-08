@@ -11,6 +11,7 @@ from api.btce import *
 from api.tfoll import *
 from api.base import *
 from api.btcchina import *
+from api.huobi import *
 from lib.log import *
 
 from config import accounts
@@ -30,7 +31,8 @@ class ThreeBody(object):
         self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
         self.btcchina = BtcchinaTrade(accounts.btcchina)
-        self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina']
+        self.huobi = HuobiTrade(accounts.huobi)
+        self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina', 'huobi']
         self._concurrency = 10
 
     def set_trade_status(self, trade_name, status=False):
@@ -63,6 +65,12 @@ class ThreeBody(object):
             }
         return res
 
+    def get_huobi_info(self):
+        self.huobi_info = self.huobi.user_info()
+        self.huobi_info['funds']['free']['ltc'] = float(self.huobi_info['funds']['free']['ltc']) - 0.5
+        self.huobi_info['funds']['free']['btc'] = float(self.huobi_info['funds']['free']['btc'])
+        self.huobi_info['funds']['free']['cny'] = float(self.huobi_info['funds']['free']['cny']) - 50
+
     def get_okcoin_info(self):
         self.okcoin_info = self.okcoin.user_info()
         self.okcoin_info['funds']['free']['ltc'] = float(self.okcoin_info['funds']['free']['ltc']) - 0.5
@@ -87,6 +95,13 @@ class ThreeBody(object):
         self.tfoll_info['funds']['free']['ltc'] = float(self.tfoll_info['funds']['free']['ltc']) - 0.5
         self.tfoll_info['funds']['free']['btc'] = float(self.tfoll_info['funds']['free']['btc']) 
         self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny']) - 50
+
+    def get_huobi_depth(self):
+        self.huobi_depth = self.huobi.depth(symbol='ltc_cny')
+        self.huobi_depth['sell'][0] = float(self.huobi_depth['sell'][0])
+        self.huobi_depth['sell'][1] = float(self.huobi_depth['sell'][1])
+        self.huobi_depth['buy'][0] = float(self.huobi_depth['buy'][0])
+        self.huobi_depth['buy'][1] = float(self.huobi_depth['buy'][1])
 
     def get_okcoin_depth(self):
         self.okcoin_depth = self.okcoin.depth(symbol='ltc_cny')
@@ -124,10 +139,12 @@ class ThreeBody(object):
         self.btce_depth = None
         self.tfoll_depth = None
         self.btcchina_depth = None
+        self.huobi_depth = None
         self.okcoin_info = None
         self.btce_info = None
         self.tfoll_info = None
         self.btcchina_info = None
+        self.huobi_info = None
 
     def check_depth_and_info(self):
         if self.okcoin_depth == None or self.okcoin_info == None:
@@ -146,6 +163,10 @@ class ThreeBody(object):
             self.set_trade_status('btcchina', False)
         else:
             self.set_trade_status('btcchina', True)
+        if self.huobi_depth == None or self.huobi_info== None:
+            self.set_trade_status('huobi', False)
+        else:
+            self.set_trade_status('huobi', True)
 
     def check_trade(self, status):
         src,dst = status['direct'].split("_")
@@ -175,10 +196,12 @@ class ThreeBody(object):
         pool.spawn(self.get_okcoin_info)
         pool.spawn(self.get_btce_info)
         pool.spawn(self.get_btcchina_info)
+        pool.spawn(self.get_huobi_info)
         pool.spawn(self.get_okcoin_depth)
         pool.spawn(self.get_btce_depth)
         pool.spawn(self.get_tfoll_depth)
         pool.spawn(self.get_btcchina_depth)
+        pool.spawn(self.get_huobi_depth)
         pool.join()
         self.check_depth_and_info()
 
@@ -250,8 +273,8 @@ class ThreeBody(object):
                             amount=amount, symbol='ltc_cny')
 
     def trade(self):
-        MORE = 1.05
-        LESS = 0.95
+        MORE = 1.04
+        LESS = 0.96
         for item in self.status_list:
             if item['can_trade'] == self.TRADE_STATUS_YES:
                 src,dst = item['direct'].split("_")
