@@ -31,7 +31,7 @@ class ThreeBody(object):
         self.tfoll = TfollTrade(accounts.tfoll)
         self.btcchina = BtcchinaTrade(accounts.btcchina)
         self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina']
-        self._concurrency = 10
+        self._concurrency = 100
 
     def set_trade_status(self, trade_name, status=False):
         self.trade_status[trade_name] = status
@@ -265,6 +265,8 @@ class ThreeBody(object):
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
                 amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )
+
+                amount = int(amount * 1000) / 1000.0
 
                 Log.info("trade[%s %s] src_depth[%s] dst_depth[%s]" % (item['direct'], amount, src_depth, dst_depth))
 
