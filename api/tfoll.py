@@ -42,13 +42,12 @@ class TfollTrade(BaseTrade):
         resp = requests.get(url, **HTTP_ARGS).json()
 
         error = resp.get('error', None)
+        if error == '203':
+            raise SeriousErrorException("tfoll 账户出现负数")
         if resp.get('uv', None) != '1' or resp.get('oa', None) != '004':
             raise Exception("Failed to get %s, resp[%s]]" % (prefix, resp))
         if  error != '000' and error != '' and error != None:
             raise Exception("Failed to get %s, resp[%s]]" % (prefix, resp))
-        if error == '203':
-            raise SeriousErrorException("tfoll 账户出现负数")
-
 
         return resp['result']
 
@@ -86,6 +85,8 @@ class TfollTrade(BaseTrade):
                 '%s_quantity' % type : amount,
                 'type' : (symbol == 'btc_cny') and '1' or '2'
             })
+        except SeriousErrorException as e:
+            raise SeriousErrorException("tfoll 账户出现负数")
         except Exception as e:
             raise TradeFailedException('tfoll trade fail, price[%s], amount[%s], symbol[%s], type[%s], errorinfo[%s]' % \
                     (rate, amount, symbol, type, e))
@@ -132,11 +133,5 @@ class TfollTrade(BaseTrade):
 if __name__ == "__main__":
     tfoll = TfollTrade(accounts.tfoll)
     pre = int(time.time())
-    while True:
-        cur = int(time.time())
-        print '----------------------%s----------------------' % (cur - pre)
-        print tfoll.depth('ltc_cny')
-        print tfoll.user_info()
-        pre = cur
-    #print tfoll.trade(type='sell', rate=40, amount=10, symbol='ltc_cny')
+    print tfoll.trade(type='sell', rate=31, amount=10, symbol='ltc_cny')
 

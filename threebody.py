@@ -33,7 +33,7 @@ class ThreeBody(object):
         self.btcchina = BtcchinaTrade(accounts.btcchina)
         self.huobi = HuobiTrade(accounts.huobi)
         self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina', 'huobi']
-        self._concurrency = 10
+        self._concurrency = 100
 
     def set_trade_status(self, trade_name, status=False):
         self.trade_status[trade_name] = status
@@ -217,7 +217,7 @@ class ThreeBody(object):
                 total_ltc = total_ltc + info['funds']['free']['ltc']
                 total_btc = total_btc + info['funds']['free']['btc']
                 log_str = '%s[%s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
-                                            Log.green(info['funds']['free']['ltc']),\
+                                            Log.green(int(info['funds']['free']['ltc'])),\
                                             log_str)
         log_str = '[%s %s %s] %s' % (Log.green(total_cny), total_ltc, total_btc, log_str)
         Log.info(log_str)
@@ -288,6 +288,8 @@ class ThreeBody(object):
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
                 amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )
+
+                amount = int(amount * 1000) / 1000.0
 
                 Log.info("trade[%s %s] src_depth[%s] dst_depth[%s]" % (item['direct'], amount, src_depth, dst_depth))
 
