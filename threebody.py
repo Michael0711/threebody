@@ -284,7 +284,7 @@ class ThreeBody(object):
                 dst_info = getattr(self, "%s_info" % dst)
                 src_trade = getattr(self, src)
                 dst_trade = getattr(self, dst)
-                amount = 5
+                amount = 10
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
                 amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )

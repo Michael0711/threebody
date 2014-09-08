@@ -62,7 +62,7 @@ class BtcchinaTrade(BaseTrade):
         headers={'Authorization':auth_string,'Json-Rpc-Tonce':tonce}
  
         #post_data dictionary passed as JSON        
-        response = requests.post("https://api.btcchina.com/api_trade_v1.php", headers=headers, data=json.dumps(post_data), verify=True)
+        response = requests.post("https://api.btcchina.com/api_trade_v1.php", headers=headers, data=json.dumps(post_data), **HTTP_ARGS)
         #self.conn.request("POST",'/api_trade_v1.php',json.dumps(post_data),headers)
         #response = self.conn.getresponse()
  
