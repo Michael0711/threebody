@@ -5,6 +5,7 @@ import gevent.monkey
 #gevent.monkey.patch_ssl()
 gevent.monkey.patch_all()
 from gevent.pool import Pool
+import gevent
 
 from api.okcoin import *
 from api.btce import *
@@ -267,27 +268,50 @@ class ThreeBody(object):
             log_str = "%s %s" % (log_str, item_log)
         Log.info(log_str)
 
-    def sell(self, trader, rate, amount, trade_name):
+    def sell(self, trader, rate, amount, trade_name, time=0):
         try:
+            if time == 5:
+                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+            Log.info("start sell trade[%s] rate[%s] amount[%s] trade[%s]" % (time, rate, amount, trade_name))
             if trade_name == 'btce':
-                trader.trade(type='sell', rate=rate / USD_TO_RMB, \
+                trader.trade(type='sell', rate=int(rate / USD_TO_RMB * 10) / 10.0, \
                                 amount=amount, symbol='ltc_usd')
             else:
-                trader.trade(type='sell', rate=rate, \
+                trader.trade(type='sell', rate=int(rate * 10) / 10.0, \
                                 amount=amount, symbol='ltc_cny')
         except SeriousErrorException as e:
             trader.set_stop(True)
+        except TradeFailedException, e:
+            if str(e).find("The handshake operation timed out") != -1:
+                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+                gevent.sleep(0.5)
+                self.sell(trader, rate, amount, trade_name, time=time+1)
+            else:
+                Log.error("TradeFailedException error[%s]" % e)
 
-    def buy(self, trader, rate, amount, trade_name):
+    def buy(self, trader, rate, amount, trade_name, time=0):
         try:
+            if time == 5:
+                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+            Log.info("start buy trade[%s] rate[%s] amount[%s] trade[%s]" % (time, rate, amount, trade_name))
             if trade_name == 'btce':
-                trader.trade(type='buy', rate=rate / USD_TO_RMB, \
+                trader.trade(type='buy', rate=(rate / USD_TO_RMB * 10) / 10.0, \
                                 amount=amount * 1.002, symbol='ltc_usd')
             else:
-                trader.trade(type='buy', rate=rate, \
+                trader.trade(type='buy', rate=int(rate * 10) / 10.0, \
                                 amount=amount, symbol='ltc_cny')
         except SeriousErrorException as e:
             trader.set_stop(True)
+        except TradeFailedException, e:
+            if str(e).find("The handshake operation timed out") != -1:
+                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+                gevent.sleep(0.5)
+                self.buy(trader, rate, amount, trade_name, time=time+1)
+            else:
+                Log.error("TradeFailedException error[%s]" % e)
+
 
     def trade(self):
         MORE = 1.04
@@ -352,6 +376,7 @@ class ThreeBody(object):
 if __name__ == '__main__':
     three_body = ThreeBody()
     three_body.run()
+
     #btcchina = BtcchinaTrade(accounts.btcchina)
     #print btcchina.user_info()
     #print btcchina.depth(symbol='ltc_cny')
