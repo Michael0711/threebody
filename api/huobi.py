@@ -1,8 +1,6 @@
 #!/usr/bin/python                                                               
 # -*- coding: utf-8 -*-
 
-
-#coding=utf-8
 import time, re, requests, md5, urllib, urllib2, json
 
 from base import *
@@ -78,10 +76,13 @@ class HuobiTrade(BaseTrade):
             data = requests.get(url, **HTTP_ARGS).text
             data = re.match(DATA_REGEX, data).group(1)
             data = json.loads(data)
-            return {
-                    'buy': [float(data['buys'][0]['price']), float(data['buys'][0]['amount'])],
-                    'sell': [float(data['sells'][0]['price']), float(data['sells'][0]['amount'])]
-                    }
+            res =  {
+                'buy': [float(data['buys'][0]['price']), float(data['buys'][0]['amount'])],
+                'sell': [float(data['sells'][0]['price']), float(data['sells'][0]['amount'])]
+            }
+            if res['buy'][0] > res['sell'][0]:
+                raise DepthFailedException('huobi depth error[%s]' % res)
+            return res
         except Exception as e:
             raise DepthFailedException("get depth data fail[%s]" % e)
             return False
