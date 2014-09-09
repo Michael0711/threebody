@@ -22,8 +22,8 @@ USD_TO_RMB = 6.15
 
 
 flow_control = {
-    'btce_okcoin' : [0.009, 30],
-    'btce_tfoll' : [0.009, 30],
-    'btce_huobi' : [0.009, 30],
-    'btce_btcchina' : [0.009, 30],
+    'btce_okcoin' : [1.009, 30],
+    'btce_tfoll' : [1.009, 30],
+    'btce_huobi' : [1.009, 30],
+    'btce_btcchina' : [1.009, 30],
 }

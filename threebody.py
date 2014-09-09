@@ -327,7 +327,7 @@ class ThreeBody(object):
                 dst_trade = getattr(self, dst)
 
                 flow_low = flow_control.get(item['direct'], None)
-                amount = flow_low and flow_low[1] or 10
+                amount = flow_low and flow_low[1] or 50
 
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
