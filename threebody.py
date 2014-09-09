@@ -23,6 +23,7 @@ class ThreeBody(object):
     TRADE_STATUS_LESS_CNY = 2
     TRADE_STATUS_LESS_LTC = 3
     TRADE_STATUS_LESS_DEPTH = 4
+    TRADE_STATUS_TAKE_IT_EASY = 5
     trade_status = {
     }
 
@@ -187,6 +188,10 @@ class ThreeBody(object):
         if status['ltc_amount'] < SMALL_LTC:
             status['can_trade'] = self.TRADE_STATUS_LESS_DEPTH
             return
+        flow_low = flow_control.get(status['direct'], None)
+        if flow_low and status['rate'] < flow_low[0]:
+            status['can_trade'] = self.TRADE_STATUS_TAKE_IT_EASY
+            return
         status['can_trade'] = self.TRADE_STATUS_YES
 
     def sync(self):
@@ -213,12 +218,18 @@ class ThreeBody(object):
         for account_name in self.account_list:
             if self.get_trade_status(account_name):
                 info = getattr(self, "%s_info" % account_name)
+                trade = getattr(self, account_name)
                 total_cny = total_cny + info['funds']['free']['cny']
                 total_ltc = total_ltc + info['funds']['free']['ltc']
                 total_btc = total_btc + info['funds']['free']['btc']
-                log_str = '%s[%s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
-                                            Log.green(int(info['funds']['free']['ltc'])),\
-                                            log_str)
+                if trade.stop:
+                    log_str = '%s[%s %s stop] %s' % (account_name, int(info['funds']['free']['cny']),\
+                                                Log.green(int(info['funds']['free']['ltc'])),\
+                                                log_str)
+                else:
+                    log_str = '%s[%s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
+                                                Log.green(int(info['funds']['free']['ltc'])),\
+                                                log_str)
         log_str = '[%s %s %s] %s' % (Log.green(total_cny), total_ltc, total_btc, log_str)
         Log.info(log_str)
 
@@ -257,20 +268,26 @@ class ThreeBody(object):
         Log.info(log_str)
 
     def sell(self, trader, rate, amount, trade_name):
-        if trade_name == 'btce':
-            trader.trade(type='sell', rate=rate / USD_TO_RMB, \
-                            amount=amount, symbol='ltc_usd')
-        else:
-            trader.trade(type='sell', rate=rate, \
-                            amount=amount, symbol='ltc_cny')
+        try:
+            if trade_name == 'btce':
+                trader.trade(type='sell', rate=rate / USD_TO_RMB, \
+                                amount=amount, symbol='ltc_usd')
+            else:
+                trader.trade(type='sell', rate=rate, \
+                                amount=amount, symbol='ltc_cny')
+        except SeriousErrorException as e:
+            trader.set_stop(True)
 
     def buy(self, trader, rate, amount, trade_name):
-        if trade_name == 'btce':
-            trader.trade(type='buy', rate=rate / USD_TO_RMB, \
-                            amount=amount * 1.002, symbol='ltc_usd')
-        else:
-            trader.trade(type='buy', rate=rate, \
-                            amount=amount, symbol='ltc_cny')
+        try:
+            if trade_name == 'btce':
+                trader.trade(type='buy', rate=rate / USD_TO_RMB, \
+                                amount=amount * 1.002, symbol='ltc_usd')
+            else:
+                trader.trade(type='buy', rate=rate, \
+                                amount=amount, symbol='ltc_cny')
+        except SeriousErrorException as e:
+            trader.set_stop(True)
 
     def trade(self):
         MORE = 1.04
@@ -284,12 +301,18 @@ class ThreeBody(object):
                 dst_info = getattr(self, "%s_info" % dst)
                 src_trade = getattr(self, src)
                 dst_trade = getattr(self, dst)
-                amount = 10
+
+                flow_low = flow_control.get(item['direct'], None)
+                amount = flow_low and flow_low[1] or 10
+
                 amount = min(amount, item['ltc_amount'])
                 amount = min(amount, src_info['funds']['free']['ltc'])
                 amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )
 
-                amount = int(amount * 1000) / 1000.0
+                amount = int(amount * 10) / 10.0
+
+                if src_trade.stop or dst_trade.stop:
+                    continue
 
                 Log.info("trade[%s %s] src_depth[%s] dst_depth[%s]" % (item['direct'], amount, src_depth, dst_depth))
 

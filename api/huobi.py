@@ -78,10 +78,13 @@ class HuobiTrade(BaseTrade):
             data = requests.get(url, **HTTP_ARGS).text
             data = re.match(DATA_REGEX, data).group(1)
             data = json.loads(data)
-            return {
-                    'buy': [float(data['buys'][0]['price']), float(data['buys'][0]['amount'])],
-                    'sell': [float(data['sells'][0]['price']), float(data['sells'][0]['amount'])]
-                    }
+            res =  {
+                'buy': [float(data['buys'][0]['price']), float(data['buys'][0]['amount'])],
+                'sell': [float(data['sells'][0]['price']), float(data['sells'][0]['amount'])]
+            }
+            if res['buy'][0] > res['sell'][0]:
+                raise DepthFailedException('huobi depth error[%s]' % res)
+            return res
         except Exception as e:
             raise DepthFailedException("get depth data fail[%s]" % e)
             return False
@@ -93,6 +96,6 @@ class HuobiTrade(BaseTrade):
 
 if __name__ == "__main__":
     huobi = HuobiTrade(accounts.huobi)
-    print json.dumps(huobi.user_info(), indent=4)
-    #print json.dumps(huobi.depth(symbol='ltc_cny'))
+    #print json.dumps(huobi.user_info(), indent=4)
+    print json.dumps(huobi.depth(symbol='ltc_cny'))
     #print json.dumps(huobi.trade(type='buy', rate=4, amount=1, symbol='ltc_cny'))

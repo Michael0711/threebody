@@ -29,6 +29,7 @@ class SeriousErrorException(Exception):
 
 class BaseTrade(object):
     def __init__(self, settings):
+        self._stop = False
         for key in settings:
             setattr(self, '_%s' % key, settings[key])
 
@@ -38,6 +39,13 @@ class BaseTrade(object):
     @property
     def can_withdrow(self):
         return False
+
+    def set_stop(self, val):
+        self._stop = val
+
+    @property
+    def stop(self):
+        return self._stop
 
     def web_login(self):
         pass
