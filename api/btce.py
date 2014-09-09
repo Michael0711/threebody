@@ -281,8 +281,8 @@ if __name__ == "__main__" :
 
     e = BtceTrade(accounts.btce)
     #print e.depth(symbol='ltc_usd')
-    print e.user_info()
-    print e.trade(type='buy', rate='6.0', amount='2', symbol='ltc_usd')
+    #print e.user_info()
+    print e.trade(type='sell', rate=500, amount=0.1, symbol='btc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
     #print e.withdraw_btc(5, '13r8HATkywXL8tHZrZK54Ysuzz8GdqtM2a')

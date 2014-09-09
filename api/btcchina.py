@@ -194,9 +194,9 @@ if __name__ == "__main__":
     #btcchina = BTCChina(access=settings['btcchina']['access_key'], secret=settings['btcchina']['secret_key'])
     btcchina = BtcchinaTrade(accounts.btcchina)
     #print json.dumps(btcchina.get_account_info(), indent=4)
-    print json.dumps(btcchina.user_info())
-    print json.dumps(btcchina.depth("ltc_cny"))
-    #print json.dumps(btcchina.trade(type="sell", rate=100, amount=2, symbol='ltc_cny'))
+    #print json.dumps(btcchina.user_info())
+    print json.dumps(btcchina.depth("btc_cny"))
+    print json.dumps(btcchina.trade(type="buy", rate=2800, amount=0.01, symbol='btc_cny'))
     #print json.dumps(btcchina.trade(type="buy", rate=1, amount=2, symbol='ltc_cny'))
             
 
