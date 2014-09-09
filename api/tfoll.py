@@ -133,5 +133,8 @@ class TfollTrade(BaseTrade):
 if __name__ == "__main__":
     tfoll = TfollTrade(accounts.tfoll)
     pre = int(time.time())
-    print tfoll.trade(type='sell', rate=31, amount=10, symbol='ltc_cny')
+    print tfoll.user_info()
+    #print tfoll.trade(type='buy', rate=2800, amount=0.01, symbol='btc_cny')
+
+    #print tfoll.depth(symbol='btc_cny')
 

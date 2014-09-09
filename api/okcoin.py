@@ -223,9 +223,9 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
     logging.getLogger('requests').setLevel(logging.ERROR)
     okcoin = OkcoinTrade(accounts.okcoin)
-    print okcoin.depth("ltc_cny")
-    print okcoin.get_btc_deposit_address()
-    print okcoin.get_ltc_deposit_address()
+    print okcoin.depth("btc_cny")
+    #print okcoin.get_btc_deposit_address()
+    #print okcoin.get_ltc_deposit_address()
     #okcoin.withdrow_btc(3.0, '1MK4PfVzFgLvwhmS972xYXb8kaqoQsy7D5')
 
     #print okcoin.withdrow_ltc(400.0, 'LeBnaDochhdtLP6gj78nVmUdrV1qGUHZ2m')

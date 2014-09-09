@@ -1,8 +1,6 @@
 #!/usr/bin/python                                                               
 # -*- coding: utf-8 -*-
 
-
-#coding=utf-8
 import time, re, requests, md5, urllib, urllib2, json
 
 from base import *
@@ -97,5 +95,5 @@ class HuobiTrade(BaseTrade):
 if __name__ == "__main__":
     huobi = HuobiTrade(accounts.huobi)
     #print json.dumps(huobi.user_info(), indent=4)
-    print json.dumps(huobi.depth(symbol='ltc_cny'))
-    #print json.dumps(huobi.trade(type='buy', rate=4, amount=1, symbol='ltc_cny'))
+    #print json.dumps(huobi.depth(symbol='btc_cny'))
+    print json.dumps(huobi.trade(type='buy', rate=2800, amount=0.01, symbol='btc_cny'))
