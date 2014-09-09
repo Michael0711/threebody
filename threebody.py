@@ -366,7 +366,6 @@ class ThreeBody(object):
                 self.search()
                 self.trade()
                 pre = cur
-                time.sleep(0.5)
             except SeriousErrorException as e:
                 Log.error(e)
                 break

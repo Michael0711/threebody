@@ -280,9 +280,9 @@ if __name__ == "__main__" :
     logging.getLogger('requests').setLevel(logging.ERROR)
 
     e = BtceTrade(accounts.btce)
-    #print e.depth(symbol='ltc_usd')
-    #print e.user_info()
-    print e.trade(type='sell', rate=500, amount=0.1, symbol='btc_usd')
+    print e.depth(symbol='ltc_usd')
+    print e.user_info()
+    #print e.trade(type='sell', rate=500, amount=0.1, symbol='btc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
     #print e.withdraw_btc(5, '13r8HATkywXL8tHZrZK54Ysuzz8GdqtM2a')
