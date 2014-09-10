@@ -56,13 +56,13 @@ class ThreeBody(object):
         if rate1 > rate2:
             res = {
                 'direct' : direct1,
-                'rate' : rate1,
+                'rate' : int(rate1 * 1000) / 1000.0,
                 'ltc_amount' : ltc_amount1,
             }
         else:
             res = {
                 'direct' : direct2,
-                'rate' : rate2,
+                'rate' : int(rate2 * 1000) / 1000.0,
                 'ltc_amount' : ltc_amount2,
             }
         return res
