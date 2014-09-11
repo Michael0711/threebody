@@ -92,29 +92,32 @@ class OkcoinTrade(BaseTrade):
             resp['buy'][1] = s['bids'][0][1]
             return resp
         except Exception, e:
-            raise DepthFailedException("depth failed! e[%s]" % e)
+            raise DepthFailedException("okcoin depth failed! e[%s]" % e)
 
     def user_info(self):
-        info = {
-            "funds": {
-                "freezed": {
-                },
-                "free": {
+        try:
+            info = {
+                "funds": {
+                    "freezed": {
+                    },
+                    "free": {
+                    }
                 }
             }
-        }
-        d = pq(self.s.get(self._host, **HTTP_ARGS).text)
-        nodes = list(d('.money.gray2').items())
+            d = pq(self.s.get(self._host, **HTTP_ARGS).text)
+            nodes = list(d('.money.gray2').items())
 
-        info['funds']['free']['cny'] = float("".join(nodes[0].text().split(",")))
-        info['funds']['free']['btc'] = float("".join(nodes[1].text().split(",")))
-        info['funds']['free']['ltc'] = float("".join(nodes[2].text().split(",")))
+            info['funds']['free']['cny'] = float("".join(nodes[0].text().split(",")))
+            info['funds']['free']['btc'] = float("".join(nodes[1].text().split(",")))
+            info['funds']['free']['ltc'] = float("".join(nodes[2].text().split(",")))
 
-        info['funds']['freezed']['cny'] = float("".join(nodes[3].text().split(",")))
-        info['funds']['freezed']['btc'] = float("".join(nodes[4].text().split(",")))
-        info['funds']['freezed']['ltc'] = float("".join(nodes[5].text().split(",")))
+            info['funds']['freezed']['cny'] = float("".join(nodes[3].text().split(",")))
+            info['funds']['freezed']['btc'] = float("".join(nodes[4].text().split(",")))
+            info['funds']['freezed']['ltc'] = float("".join(nodes[5].text().split(",")))
 
-        return info
+            return self.format_info(info)
+        except Exception as e:
+            raise UserInfoFailedException("okcoin get user info error[%s]" % e)
 
     def withdrow_btc(self, amount, target_address):
         return self._withdraw(amount, target_address, 0)

@@ -63,4 +63,8 @@ class BaseTrade(object):
    # }
     def user_info(self):
         NotImplementedError("please implement user_info api")
-
+    def format_info(self, info):
+        info['funds']['free']['ltc'] = float(info['funds']['free']['ltc']) - 0.5
+        info['funds']['free']['btc'] = float(info['funds']['free']['btc']) - 0.01
+        info['funds']['free']['cny'] = float(info['funds']['free']['cny']) - 50
+        return info

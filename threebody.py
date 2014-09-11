@@ -22,34 +22,57 @@ class ThreeBody(object):
     TRADE_STATUS_NO = 0
     TRADE_STATUS_YES = 1
     TRADE_STATUS_LESS_CNY = 2
-    TRADE_STATUS_LESS_LTC = 3
+    TRADE_STATUS_LESS_COIN = 3
     TRADE_STATUS_LESS_DEPTH = 4
     TRADE_STATUS_TAKE_IT_EASY = 5
-    trade_status = {
+    trade_ltc_status = {
     }
-
+    trade_btc_status = {
+    }
     def __init__(self):
         self.okcoin = OkcoinTrade(accounts.okcoin)
         self.btce = BtceTrade(accounts.btce)
         self.tfoll = TfollTrade(accounts.tfoll)
         self.btcchina = BtcchinaTrade(accounts.btcchina)
         self.huobi = HuobiTrade(accounts.huobi)
+        self.ticker = 0
+
+        def _get_depth(name, type):
+            def _wrap():
+                if name == 'btce':
+                    _depth = getattr(self, name).depth(symbol='%s_usd' % type)
+                else:
+                    _depth = getattr(self, name).depth(symbol='%s_cny' % type)
+                setattr(self, "%s_%s_depth" % (name, type), _depth)
+            return _wrap
+
+        def _get_info(name):
+            def _wrap():
+                _info = getattr(self, name).user_info()
+                setattr(self, "%s_info" % name, _info)
+            return _wrap
+
         self.account_list = ['okcoin', 'btce', 'tfoll', 'btcchina', 'huobi']
+        for account_name in self.account_list:
+            setattr(self, "get_%s_ltc_depth" % account_name, _get_depth(account_name, 'ltc'))
+            setattr(self, "get_%s_btc_depth" % account_name, _get_depth(account_name, 'btc'))
+            setattr(self, "get_%s_info" % account_name, _get_info(account_name))
+
         self._concurrency = 100
 
-    def set_trade_status(self, trade_name, status=False):
-        self.trade_status[trade_name] = status
+    def set_trade_status(self, trade_name, type, status=False):
+        getattr(self, "trade_%s_status" % type)[trade_name] = status
 
-    def get_trade_status(self, trade_name):
-        return self.trade_status[trade_name]
+    def get_trade_status(self, trade_name, type):
+        return getattr(self, "trade_%s_status" % type).get(trade_name, False)
 
-    def get_status(self, depth1, depth2, name1, name2):
+    def get_status(self, depth1, depth2, name1, name2, type):
         direct1 = '%s_%s' % (name2, name1)
         rate1 = 1.0 + (depth2['buy'][0] -  depth1['sell'][0]) * 1.0 / depth1['sell'][0]
-        ltc_amount1 = min(depth2['buy'][1], depth1['sell'][1])
+        amount1 = min(depth2['buy'][1], depth1['sell'][1])
         direct2 = '%s_%s' % (name1, name2)
         rate2 = 1.0 + (depth1['buy'][0] - depth2['sell'][0]) * 1.0 / depth2['sell'][0]
-        ltc_amount2 = min(depth1['buy'][1], depth2['sell'][1])
+        amount2 = min(depth1['buy'][1], depth2['sell'][1])
         if name1 == 'btce' or name2 == 'btce':
             rate1 = rate1 - 0.002
             rate2 = rate2 - 0.002
@@ -57,158 +80,94 @@ class ThreeBody(object):
             res = {
                 'direct' : direct1,
                 'rate' : int(rate1 * 1000) / 1000.0,
-                'ltc_amount' : ltc_amount1,
+                'amount' : amount1,
+                'type' : type
             }
         else:
             res = {
                 'direct' : direct2,
                 'rate' : int(rate2 * 1000) / 1000.0,
-                'ltc_amount' : ltc_amount2,
+                'amount' : amount2,
+                'type' : type
             }
         return res
 
-    def get_huobi_info(self):
-        self.huobi_info = self.huobi.user_info()
-        self.huobi_info['funds']['free']['ltc'] = float(self.huobi_info['funds']['free']['ltc']) - 0.5
-        self.huobi_info['funds']['free']['btc'] = float(self.huobi_info['funds']['free']['btc'])
-        self.huobi_info['funds']['free']['cny'] = float(self.huobi_info['funds']['free']['cny']) - 50
-
-    def get_okcoin_info(self):
-        self.okcoin_info = self.okcoin.user_info()
-        self.okcoin_info['funds']['free']['ltc'] = float(self.okcoin_info['funds']['free']['ltc']) - 0.5
-        self.okcoin_info['funds']['free']['btc'] = float(self.okcoin_info['funds']['free']['btc'])
-        self.okcoin_info['funds']['free']['cny'] = float(self.okcoin_info['funds']['free']['cny']) - 50
-
-    def get_btcchina_info(self):
-        self.btcchina_info = self.btcchina.user_info()
-        self.btcchina_info['funds']['free']['ltc'] = float(self.btcchina_info['funds']['free']['ltc']) - 0.5
-        self.btcchina_info['funds']['free']['btc'] = float(self.btcchina_info['funds']['free']['btc'])
-        self.btcchina_info['funds']['free']['cny'] = float(self.btcchina_info['funds']['free']['cny']) - 50
-
-    def get_btce_info(self):
-        self.btce_info = self.btce.user_info()
-        self.btce_info['funds']['free']['ltc'] = float(self.btce_info['funds']['free']['ltc']) - 0.5
-        self.btce_info['funds']['free']['btc'] = float(self.btce_info['funds']['free']['btc'])
-        self.btce_info['funds']['free']['usd'] = float(self.btce_info['funds']['free']['usd'])
-        self.btce_info['funds']['free']['cny'] = self.btce_info['funds']['free']['usd'] * USD_TO_RMB - 50
-
-    def get_tfoll_info(self):
-        self.tfoll_info = self.tfoll.user_info()
-        self.tfoll_info['funds']['free']['ltc'] = float(self.tfoll_info['funds']['free']['ltc']) - 0.5
-        self.tfoll_info['funds']['free']['btc'] = float(self.tfoll_info['funds']['free']['btc']) 
-        self.tfoll_info['funds']['free']['cny'] = float(self.tfoll_info['funds']['free']['cny']) - 50
-
-    def get_huobi_depth(self):
-        self.huobi_depth = self.huobi.depth(symbol='ltc_cny')
-        self.huobi_depth['sell'][0] = float(self.huobi_depth['sell'][0])
-        self.huobi_depth['sell'][1] = float(self.huobi_depth['sell'][1])
-        self.huobi_depth['buy'][0] = float(self.huobi_depth['buy'][0])
-        self.huobi_depth['buy'][1] = float(self.huobi_depth['buy'][1])
-
-    def get_okcoin_depth(self):
-        self.okcoin_depth = self.okcoin.depth(symbol='ltc_cny')
-        self.okcoin_depth['sell'][0] = float(self.okcoin_depth['sell'][0])
-        self.okcoin_depth['sell'][1] = float(self.okcoin_depth['sell'][1])
-        self.okcoin_depth['buy'][0] = float(self.okcoin_depth['buy'][0])
-        self.okcoin_depth['buy'][1] = float(self.okcoin_depth['buy'][1])
-
-    def get_btcchina_depth(self):
-        self.btcchina_depth = self.btcchina.depth(symbol='ltc_cny')
-        self.btcchina_depth['sell'][0] = float(self.btcchina_depth['sell'][0])
-        self.btcchina_depth['sell'][1] = float(self.btcchina_depth['sell'][1])
-        self.btcchina_depth['buy'][0] = float(self.btcchina_depth['buy'][0])
-        self.btcchina_depth['buy'][1] = float(self.btcchina_depth['buy'][1])
-
-    def get_btce_depth(self):
-        self.btce_depth = self.btce.depth(symbol='ltc_usd')
-        self.btce_depth['sell'][0] = float(self.btce_depth['sell'][0])
-        self.btce_depth['sell'][1] = float(self.btce_depth['sell'][1])
-        self.btce_depth['buy'][0] = float(self.btce_depth['buy'][0])
-        self.btce_depth['buy'][1] = float(self.btce_depth['buy'][1])
-
-        self.btce_depth['sell'][0] = self.btce_depth['sell'][0] * USD_TO_RMB
-        self.btce_depth['buy'][0] = self.btce_depth['buy'][0] * USD_TO_RMB
-
-    def get_tfoll_depth(self):
-        self.tfoll_depth = self.tfoll.depth(symbol='ltc_cny')
-        self.tfoll_depth['sell'][0] = float(self.tfoll_depth['sell'][0])
-        self.tfoll_depth['sell'][1] = float(self.tfoll_depth['sell'][1])
-        self.tfoll_depth['buy'][0] = float(self.tfoll_depth['buy'][0])
-        self.tfoll_depth['buy'][1] = float(self.tfoll_depth['buy'][1])
-
     def clear_depth_and_info(self):
-        self.okcoin_depth = None
-        self.btce_depth = None
-        self.tfoll_depth = None
-        self.btcchina_depth = None
-        self.huobi_depth = None
-        self.okcoin_info = None
-        self.btce_info = None
-        self.tfoll_info = None
-        self.btcchina_info = None
-        self.huobi_info = None
+        for account_name in self.account_list:
+            setattr(self, "%s_ltc_depth" % account_name, None)
+            setattr(self, "%s_btc_depth" % account_name, None)
+            setattr(self, "%s_info" % account_name, None)
 
     def check_depth_and_info(self):
-        if self.okcoin_depth == None or self.okcoin_info == None:
-            self.set_trade_status('okcoin', False)
-        else:
-            self.set_trade_status('okcoin', True)
-        if self.btce_depth == None or self.btce_info == None:
-            self.set_trade_status('btce', False)
-        else:
-            self.set_trade_status('btce', True)
-        if self.tfoll_depth == None or self.tfoll_info == None:
-            self.set_trade_status('tfoll', False)
-        else:
-            self.set_trade_status('tfoll', True)
-        if self.btcchina_depth == None or self.btcchina_info == None:
-            self.set_trade_status('btcchina', False)
-        else:
-            self.set_trade_status('btcchina', True)
-        if self.huobi_depth == None or self.huobi_info== None:
-            self.set_trade_status('huobi', False)
-        else:
-            self.set_trade_status('huobi', True)
+        for account_name in self.account_list:
+            ltc_depth = getattr(self, "%s_ltc_depth" % account_name)
+            btc_depth = getattr(self, "%s_btc_depth" % account_name)
+            info = getattr(self, "%s_info" % account_name)
+            if ltc_depth == None or info == None:
+                self.set_trade_status(account_name, 'ltc', False)
+            else:
+                self.set_trade_status(account_name, 'ltc', True)
+            if btc_depth == None or info == None:
+                self.set_trade_status(account_name, 'btc', False)
+            else:
+                self.set_trade_status(account_name, 'btc', True)
+
+    def _get_flow_control(self, type):
+        if type == 'ltc':
+            return FLOW_CONTROL_LTC
+        return FLOW_CONTROL_BTC 
 
     def check_trade(self, status):
+        def _small(type):
+            type_map = {
+                'ltc' : 0.11,
+                'btc' : 0.01
+            }
+            return type_map[type]
         src,dst = status['direct'].split("_")
-        src_depth = getattr(self, '%s_depth' % src)
         src_info = getattr(self, "%s_info" % src)
-        dst_depth = getattr(self, "%s_depth" % dst) 
         dst_info = getattr(self, "%s_info" % dst) 
-        SMALL_LTC = 0.11
-        if status['rate'] < 1.001:
+        type = status['type']
+        dst_depth = getattr(self, "%s_%s_depth" % (dst, type)) 
+        src_depth = getattr(self, '%s_%s_depth' % (src, type))
+        flow_control = self._get_flow_control(type)
+        flow_low = flow_control.get(status['direct'], None)
+
+        if status['rate'] < flow_control['default'][0]:
             status['can_trade'] = self.TRADE_STATUS_NO
             return
-        if src_info['funds']['free']['ltc'] < SMALL_LTC:
-            status['can_trade'] = self.TRADE_STATUS_LESS_LTC
-            return
-        if dst_info['funds']['free']['cny'] < dst_depth['sell'][0] * SMALL_LTC:
-            status['can_trade'] = self.TRADE_STATUS_LESS_CNY
-            return
-        if status['ltc_amount'] < SMALL_LTC:
-            status['can_trade'] = self.TRADE_STATUS_LESS_DEPTH
-            return
-        flow_low = flow_control.get(status['direct'], None)
+
         if flow_low and status['rate'] < flow_low[0]:
             status['can_trade'] = self.TRADE_STATUS_TAKE_IT_EASY
+            return
+
+        if src_info['funds']['free'][type] < _small(type):
+            status['can_trade'] = self.TRADE_STATUS_LESS_COIN
+            return
+        if dst_info['funds']['free']['cny'] < dst_depth['sell'][0] * _small(type):
+            status['can_trade'] = self.TRADE_STATUS_LESS_CNY
+            return
+        if status['amount'] < _small(type):
+            status['can_trade'] = self.TRADE_STATUS_LESS_DEPTH
             return
         status['can_trade'] = self.TRADE_STATUS_YES
 
     def sync(self):
+        self.ticker = self.ticker + 1
         self.clear_depth_and_info()
-        pool = Pool(self._concurrency)
-        pool.spawn(self.get_tfoll_info)
-        pool.spawn(self.get_okcoin_info)
-        pool.spawn(self.get_btce_info)
-        pool.spawn(self.get_btcchina_info)
-        pool.spawn(self.get_huobi_info)
-        pool.spawn(self.get_okcoin_depth)
-        pool.spawn(self.get_btce_depth)
-        pool.spawn(self.get_tfoll_depth)
-        pool.spawn(self.get_btcchina_depth)
-        pool.spawn(self.get_huobi_depth)
-        pool.join()
+        pool1 = Pool(self._concurrency)
+        for account_name in self.account_list:
+            pool1.spawn(getattr(self, "get_%s_info" % account_name))
+        pool1.join()
+        pool2 = Pool(self._concurrency)
+        for account_name in self.account_list:
+            if self.ticker % 2 == 1:
+                pool2.spawn(getattr(self, "get_%s_ltc_depth" % account_name))
+            else:
+                if account_name == 'tfoll':
+                    continue
+                pool2.spawn(getattr(self, "get_%s_btc_depth" % account_name))
+        pool2.join()
         self.check_depth_and_info()
 
     def info_status(self):
@@ -217,21 +176,25 @@ class ThreeBody(object):
         total_btc = 0
         log_str = ''
         for account_name in self.account_list:
-            if self.get_trade_status(account_name):
+            
+            if self.get_trade_status(account_name,'ltc') or \
+               self.get_trade_status(account_name,'btc'):
                 info = getattr(self, "%s_info" % account_name)
                 trade = getattr(self, account_name)
                 total_cny = total_cny + info['funds']['free']['cny']
                 total_ltc = total_ltc + info['funds']['free']['ltc']
                 total_btc = total_btc + info['funds']['free']['btc']
                 if trade.stop:
-                    log_str = '%s[%s %s stop] %s' % (account_name, int(info['funds']['free']['cny']),\
+                    log_str = '%s[%s %s %s stop] %s' % (account_name, int(info['funds']['free']['cny']),\
                                                 Log.green(int(info['funds']['free']['ltc'])),\
+                                                Log.green("%.3f" % info['funds']['free']['btc']),\
                                                 log_str)
                 else:
-                    log_str = '%s[%s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
+                    log_str = '%s[%s %s %s] %s' % (account_name, int(info['funds']['free']['cny']),\
                                                 Log.green(int(info['funds']['free']['ltc'])),\
+                                                Log.green("%.3f" % info['funds']['free']['btc']),\
                                                 log_str)
-        log_str = '[%s %s %s] %s' % (Log.green(total_cny), total_ltc, total_btc, log_str)
+        log_str = '[%s %s %s] %s' % (Log.green("%.1f" % total_cny), "%.1f" % total_ltc, "%.3f" % total_btc, log_str)
         Log.info(log_str)
 
     def search(self):
@@ -242,17 +205,22 @@ class ThreeBody(object):
                 if j > i:
                     account1 = self.account_list[i]
                     account2 = self.account_list[j]
-                    if self.get_trade_status(account1) and self.get_trade_status(account2):
-                        self.status_list.append(self.get_status(getattr(self, "%s_depth" % account1), \
-                                                                getattr(self, "%s_depth" % account2), \
-                                                                account1, account2))
+                    if self.get_trade_status(account1, 'ltc') and self.get_trade_status(account2, 'ltc'):
+                        self.status_list.append(self.get_status(getattr(self, "%s_ltc_depth" % account1), \
+                                                                getattr(self, "%s_ltc_depth" % account2), \
+                                                                account1, account2, 'ltc'))
+                    if self.get_trade_status(account1, 'btc') and self.get_trade_status(account2, 'btc'):
+                        self.status_list.append(self.get_status(getattr(self, "%s_btc_depth" % account1), \
+                                                                getattr(self, "%s_btc_depth" % account2), \
+                                                                account1, account2, 'btc'))
+
         self.status_list.sort(lambda a, b: int((b['rate'] - a['rate']) * 10000))
 
         for item in self.status_list:
             self.check_trade(item)
         
         def status_log(status, text):
-            if status == self.TRADE_STATUS_LESS_LTC:
+            if status == self.TRADE_STATUS_LESS_COIN:
                 return Log.red(text)
             if status == self.TRADE_STATUS_LESS_DEPTH:
                 return Log.blue(text)
@@ -262,53 +230,62 @@ class ThreeBody(object):
                 return Log.green(text)
             return text
 
-        log_str = ''
+        btc_log_str = ''
+        ltc_log_str = ''
         for item in self.status_list:
-            item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
-            log_str = "%s %s" % (log_str, item_log)
-        Log.info(log_str)
+            if item['type'] == 'btc':
+                item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
+                btc_log_str = "%s %s" % (btc_log_str, item_log)
+            if item['type'] == 'ltc':
+                item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
+                ltc_log_str = "%s %s" % (ltc_log_str, item_log)
 
-    def sell(self, trader, rate, amount, trade_name, time=0):
+        if ltc_log_str != '':
+            Log.info("%s %s" % (Log.green('ltc'), ltc_log_str))
+        if btc_log_str != '':
+            Log.info("%s %s" % (Log.green("btc"), btc_log_str))
+
+    def sell(self, trader, rate, amount, trade_name, type, time=0):
         try:
             if time == 5:
-                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
-                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
-            Log.info("start sell trade[%s] rate[%s] amount[%s] trade[%s]" % (time, rate, amount, trade_name))
+                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
+                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
+            Log.info("start sell trade[%s %s] rate[%s] amount[%s] trade[%s]" % (time, type, rate, amount, trade_name))
             if trade_name == 'btce':
-                trader.trade(type='sell', rate=int(rate / USD_TO_RMB * 10) / 10.0, \
-                                amount=amount, symbol='ltc_usd')
+                trader.trade(type='sell', rate=int(rate * 10) / 10.0, \
+                                amount=amount, symbol='%s_usd' % type)
             else:
                 trader.trade(type='sell', rate=int(rate * 10) / 10.0, \
-                                amount=amount, symbol='ltc_cny')
+                                amount=amount, symbol='%s_cny' % type)
         except SeriousErrorException as e:
             trader.set_stop(True)
         except TradeFailedException, e:
-            if str(e).find("The handshake operation timed out") != -1:
-                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+            if str(e).find("timed out") != -1:
+                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
                 gevent.sleep(0.5)
-                self.sell(trader, rate, amount, trade_name, time=time+1)
+                self.sell(trader, rate, amount, trade_name, type, time=time+1)
             else:
                 Log.error("TradeFailedException error[%s]" % e)
 
-    def buy(self, trader, rate, amount, trade_name, time=0):
+    def buy(self, trader, rate, amount, trade_name, type, time=0):
         try:
             if time == 5:
-                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
-                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
-            Log.info("start buy trade[%s] rate[%s] amount[%s] trade[%s]" % (time, rate, amount, trade_name))
+                Log.error("SeriousErrorException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
+                raise SeriousErrorException("timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
+            Log.info("start buy trade[%s %s] rate[%s] amount[%s] trade[%s]" % (time, type, rate, amount, trade_name))
             if trade_name == 'btce':
-                trader.trade(type='buy', rate=(rate / USD_TO_RMB * 10) / 10.0, \
-                                amount=amount * 1.002, symbol='ltc_usd')
+                trader.trade(type='buy', rate=int(rate * 10) / 10.0, \
+                                amount=amount * 1.002, symbol='%s_usd' % type)
             else:
                 trader.trade(type='buy', rate=int(rate * 10) / 10.0, \
-                                amount=amount, symbol='ltc_cny')
+                                amount=amount, symbol='%s_cny' % type)
         except SeriousErrorException as e:
             trader.set_stop(True)
         except TradeFailedException, e:
-            if str(e).find("The handshake operation timed out") != -1:
-                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s]" % (time, trade_name, rate, amount))
+            if str(e).find("timed out") != -1:
+                Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
                 gevent.sleep(0.5)
-                self.buy(trader, rate, amount, trade_name, time=time+1)
+                self.buy(trader, rate, amount, trade_name, type, time=time+1)
             else:
                 Log.error("TradeFailedException error[%s]" % e)
 
@@ -319,35 +296,41 @@ class ThreeBody(object):
         for item in self.status_list:
             if item['can_trade'] == self.TRADE_STATUS_YES:
                 src,dst = item['direct'].split("_")
-                src_depth = getattr(self, "%s_depth" % src)
-                dst_depth = getattr(self, "%s_depth" % dst)
+                type = item['type']
+                src_depth = getattr(self, "%s_%s_depth" % (src, type))
+                dst_depth = getattr(self, "%s_%s_depth" % (dst, type))
                 src_info = getattr(self, "%s_info" % src)
                 dst_info = getattr(self, "%s_info" % dst)
                 src_trade = getattr(self, src)
                 dst_trade = getattr(self, dst)
-
+            
+                flow_control = self._get_flow_control(type)
                 flow_low = flow_control.get(item['direct'], None)
-                amount = flow_low and flow_low[1] or 50
+                amount = flow_low and flow_low[1] or flow_control['default'][1]
 
-                amount = min(amount, item['ltc_amount'])
-                amount = min(amount, src_info['funds']['free']['ltc'])
+                amount = min(amount, item['amount'])
+                amount = min(amount, src_info['funds']['free'][type])
                 amount = min(amount, dst_info['funds']['free']['cny'] / (dst_depth['sell'][0] * MORE) )
 
-                amount = int(amount * 10) / 10.0
+                if type == 'ltc':
+                    amount = int(amount * 10) / 10.0
+                else:
+                    amount = int(amount * 100) / 100.0
 
                 if src_trade.stop or dst_trade.stop:
                     continue
 
-                Log.info("trade[%s %s] src_depth[%s] dst_depth[%s]" % (item['direct'], amount, src_depth, dst_depth))
+                Log.info("trade[%s %s %s] src_depth[%s] dst_depth[%s]" % (type, item['direct'], amount, src_depth, dst_depth))
 
                 pool = Pool(self._concurrency)
-                pool.spawn(self.sell, src_trade, src_depth['buy'][0] * LESS, amount, src)
-                pool.spawn(self.buy, dst_trade, dst_depth['sell'][0] * MORE, amount, dst)
+                pool.spawn(self.sell, src_trade, src_depth['buy'][0] * LESS, amount, src, type)
+                pool.spawn(self.buy, dst_trade, dst_depth['sell'][0] * MORE, amount, dst, type)
                 pool.join()
 
                 if src == 'tfoll' or dst == 'tfoll':
                     time.sleep(0.5)
                 break
+
             else:
                 continue
 

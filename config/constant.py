@@ -21,9 +21,19 @@ DEFAULT_HEADERS = {
 USD_TO_RMB = 6.15
 
 
-flow_control = {
+FLOW_CONTROL_LTC = {
     'okcoin_btce' : [1.009, 30],
     'tfoll_btce' : [1.009, 30],
     'huobi_btce' : [1.009, 30],
     'btcchina_btce' : [1.009, 30],
+    'default' : [1.001, 20]
 }
+
+FLOW_CONTROL_BTC = {
+    'okcoin_btce' : [1.009, 0.3],
+    'tfoll_btce' : [1.009, 0.3],
+    'huobi_btce' : [1.009, 0.3],
+    'btcchina_btce' : [1.009, 0.3],
+    'default' : [1.001, 0.2]
+}
+

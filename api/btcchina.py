@@ -102,7 +102,7 @@ class BtcchinaTrade(BaseTrade):
                 }
             }
         }
-        return res
+        return self.format_info(res)
 
     def depth(self, symbol='ltc_cny'):
         post_data = {}

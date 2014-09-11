@@ -110,7 +110,7 @@ class TfollTrade(BaseTrade):
             info['funds']['freezed']['cny'] = trade_info['use_CNY']
             info['funds']['freezed']['ltc'] = trade_info['use_LTC']
             info['funds']['freezed']['btc'] = trade_info['use_BTC']
-            return info
+            return self.format_info(info)
         except Exception as e:
             raise UserInfoFailedException('Get tfoll userinfo fail: %s' % e)
 

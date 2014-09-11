@@ -40,7 +40,7 @@ class HuobiTrade(BaseTrade):
                     }
                 }
             }
-            return res
+            return self.format_info(res)
         except Exception as e:
             raise UserInfoFailedException('huobi user info failed error[%s]' % e)
 

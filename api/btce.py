@@ -62,11 +62,13 @@ class BtceTrade(BaseTrade) :
                 'sell' : s['asks'][0],
                 'buy' : s['bids'][0],
             }
+            resp['sell'][0] = float(resp['sell'][0]) * USD_TO_RMB
+            resp['buy'][0] = float(resp['buy'][0]) * USD_TO_RMB
+            resp['sell'][1] = float(resp['sell'][1])
+            resp['buy'][1] = float(resp['buy'][1])
             return resp
         except Exception, e:
-            logging.warning("depth failed! e[%s]" % e)
-            return False
-
+            raise DepthFailedException("btce get depth error[%s]" % e)
 
     def user_info(self, no_exception=False) :
         url = self._host + '/tapi/'
@@ -89,16 +91,20 @@ class BtceTrade(BaseTrade) :
                 return resp
             res = {
                 'funds' : {
-                    'free' : resp['return']['funds']
+                    'free' : {
+                        'ltc' : float(resp['return']['funds']['ltc']),
+                        'btc' : float(resp['return']['funds']['btc']),
+                        'cny' : float(resp['return']['funds']['usd']) * USD_TO_RMB
+                    }
                 }
             }
-            return res
+            return self.format_info(res)
         except Exception, e:
-            logging.warning("trade failed! e[%s]" % e)
-            return False
-
+            raise UserInfoFailedException("btce get userinfo error[%s]" % e)
     
     def trade(self, type, rate, amount, symbol='ltc_btc') :
+        if symbol.find('usd') != -1:
+            rate = float(rate) / USD_TO_RMB
         url = self._host + '/tapi/'
         post_param = {
             'method' : 'Trade',
@@ -108,6 +114,11 @@ class BtceTrade(BaseTrade) :
             'rate' : "%.5f" % float(rate),
             'amount' : "%.5f" % float(amount),
         }
+
+        if symbol.find('usd') != -1:
+            post_param['rate'] = "%.3f" % float(rate)
+            post_param['amount'] = "%.3f" % float(amount)
+
         sign = self._get_sign(post_param)
         headers = {
             "Content-type" : "application/x-www-form-urlencoded",
@@ -282,7 +293,7 @@ if __name__ == "__main__" :
     e = BtceTrade(accounts.btce)
     print e.depth(symbol='ltc_usd')
     print e.user_info()
-    #print e.trade(type='sell', rate=500, amount=0.1, symbol='btc_usd')
+    #print e.trade(type='sell', rate=4000, amount=0.1, symbol='btc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
     #print e.withdraw_btc(5, '13r8HATkywXL8tHZrZK54Ysuzz8GdqtM2a')
