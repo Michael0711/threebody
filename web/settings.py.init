@@ -1,0 +1,10 @@
+#!/usr/bin/python                                                               
+# -*- coding: utf-8 -*-
+import os.path as osp                                                                                                                                     
+PROJECT_ROOT = osp.abspath(osp.dirname(__file__))
+PROJECT_NAME = osp.basename(PROJECT_ROOT)
+settings = { 
+    "debug" : True,
+    'template_path': osp.join(PROJECT_ROOT, "templates")
+}
+
