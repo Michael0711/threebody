@@ -62,10 +62,11 @@ class BtceTrade(BaseTrade) :
                 'sell' : s['asks'][0],
                 'buy' : s['bids'][0],
             }
-            resp['sell'][0] = float(resp['sell'][0]) * USD_TO_RMB
-            resp['buy'][0] = float(resp['buy'][0]) * USD_TO_RMB
-            resp['sell'][1] = float(resp['sell'][1])
-            resp['buy'][1] = float(resp['buy'][1])
+            if symbol != 'ltc_btc':
+                resp['sell'][0] = float(resp['sell'][0]) * USD_TO_RMB
+                resp['buy'][0] = float(resp['buy'][0]) * USD_TO_RMB
+                resp['sell'][1] = float(resp['sell'][1])
+                resp['buy'][1] = float(resp['buy'][1])
             return resp
         except Exception, e:
             raise DepthFailedException("btce get depth error[%s]" % e)
@@ -291,14 +292,14 @@ if __name__ == "__main__" :
     logging.getLogger('requests').setLevel(logging.ERROR)
 
     e = BtceTrade(accounts.btce)
-    print e.depth(symbol='ltc_usd')
-    print e.user_info()
-    #print e.trade(type='sell', rate=4000, amount=0.1, symbol='btc_usd')
+    #print e.depth(symbol='ltc_btc')
+    #print e.user_info()
+    #print e.trade(type='buy', rate=2000, amount=0.01, symbol='btc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
     #print e.withdraw_btc(5, '13r8HATkywXL8tHZrZK54Ysuzz8GdqtM2a')
     #print e.get_deposit_address(8)
 
 
-    #print e.trade(type='buy', rate='0.024', amount='20')
+    #print e.trade(type='sell', rate='1', amount='1', symbol='ltc_btc')
 

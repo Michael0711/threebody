@@ -114,18 +114,55 @@ class BtcchinaTrade(BaseTrade):
                 'sell' : [resp['market_depth_ltccny']['ask'][0]['price'], resp['market_depth_ltccny']['ask'][0]['amount']],
                 'buy' : [resp['market_depth_ltccny']['bid'][0]['price'],resp['market_depth_ltccny']['bid'][0]['amount']]
             }
+            if res['sell'][0] < res['buy'][0]:
+                raise DepthFailedException("btcchina get depth error[%s]" % res)
+            return res
         elif symbol == 'btc_cny':
             res = {
                 'sell' : [resp['market_depth_btccny']['ask'][0]['price'], resp['market_depth_btccny']['ask'][0]['amount']],
                 'buy' : [resp['market_depth_btccny']['bid'][0]['price'],resp['market_depth_btccny']['bid'][0]['amount']]
             }
-        if res['sell'][0] < res['buy'][0]:
-            raise DepthFailedException("btcchina get depth error[%s]" % res)
-        return res
+            if res['sell'][0] < res['buy'][0]:
+                raise DepthFailedException("btcchina get depth error[%s]" % res)
+            return res
+        elif symbol == 'ltc_btc':
+            res = {
+                'sell' : [resp['market_depth_ltcbtc']['ask'][0]['price'], resp['market_depth_ltcbtc']['ask'][0]['amount']],
+                'buy' : [resp['market_depth_ltcbtc']['bid'][0]['price'],resp['market_depth_ltcbtc']['bid'][0]['amount']]
+            }
+            if res['sell'][0] < res['buy'][0]:
+                raise DepthFailedException("btcchina get depth error[%s]" % res)
+            return res
+        elif symbol == 'all':
+            ltc = {
+                'sell' : [resp['market_depth_ltccny']['ask'][0]['price'], resp['market_depth_ltccny']['ask'][0]['amount']],
+                'buy' : [resp['market_depth_ltccny']['bid'][0]['price'],resp['market_depth_ltccny']['bid'][0]['amount']]
+            }
+            if ltc['sell'][0] < ltc['buy'][0]:
+                raise DepthFailedException("btcchina get ltc depth error[%s]" % res)
+            btc = {
+                'sell' : [resp['market_depth_btccny']['ask'][0]['price'], resp['market_depth_btccny']['ask'][0]['amount']],
+                'buy' : [resp['market_depth_btccny']['bid'][0]['price'],resp['market_depth_btccny']['bid'][0]['amount']]
+            }
+            if btc['sell'][0] < btc['buy'][0]:
+                raise DepthFailedException("btcchina get btc depth error[%s]" % res)
+            ltc_btc = {
+                'sell' : [resp['market_depth_ltcbtc']['ask'][0]['price'], resp['market_depth_ltcbtc']['ask'][0]['amount']],
+                'buy' : [resp['market_depth_ltcbtc']['bid'][0]['price'],resp['market_depth_ltcbtc']['bid'][0]['amount']]
+            }
+            if ltc_btc['sell'][0] < ltc_btc['buy'][0]:
+                raise DepthFailedException("btcchina get ltc_btc depth error[%s]" % res)
+            return ltc,btc,ltc_btc
+
 
     def trade(self, type, rate, amount, symbol='ltc_cny') :
         try:
-            market = symbol == 'ltc_cny' and 'LTCCNY' or 'BTCCNY'
+            if symbol == 'ltc_cny':
+                market = 'LTCCNY'
+            elif symbol == 'btc_cny':
+                market = 'BTCCNY'
+            elif symbol == 'ltc_btc':
+                market = 'LTCBTC'
             if type == 'sell':
                 return self.sell(rate, amount, market)
             if type == 'buy':
@@ -195,9 +232,14 @@ if __name__ == "__main__":
     btcchina = BtcchinaTrade(accounts.btcchina)
     #print json.dumps(btcchina.get_account_info(), indent=4)
     #print json.dumps(btcchina.user_info())
-    print json.dumps(btcchina.depth("btc_cny"))
-    print json.dumps(btcchina.trade(type="buy", rate=2800, amount=0.01, symbol='btc_cny'))
+    ltc,btc,ltc_btc = btcchina.depth("all")
+    print ltc
+    print btc
+    print ltc_btc
+    #print json.dumps(btcchina.trade(type="sell", rate=20, amount=68, symbol='ltc_cny'))
     #print json.dumps(btcchina.trade(type="buy", rate=1, amount=2, symbol='ltc_cny'))
+    #def sell(self,price,amount,market,post_data={}):
+    #print btcchina.sell(1, 1, 'LTCBTC')
             
 
     #print json.dumps(btcchina.get_orders(), indent=4)

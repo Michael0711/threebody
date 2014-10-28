@@ -3,6 +3,8 @@
 
 import sys,os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import json
+import logging
 
 from exceptions import NotImplementedError
 
@@ -28,8 +30,13 @@ class SeriousErrorException(Exception):
     pass
 
 class BaseTrade(object):
+
     def __init__(self, settings):
         self._stop = False
+        self._pre_depth_str_ltc = None
+        self._pre_depth_str_btc = None
+        self._traded_last_time_ltc = False
+        self._traded_last_time_btc = False
         for key in settings:
             setattr(self, '_%s' % key, settings[key])
 
@@ -52,6 +59,26 @@ class BaseTrade(object):
 
     def trade(self, type, rate, amount, symbol='ltc_cny'):
         NotImplementedError("please implement trade api")
+
+    def traded_last_time(self, type):
+        return getattr(self, '_traded_last_time_%s' % type)
+
+    def mark_trade(self, f, type):
+        setattr(self, '_traded_last_time_%s' % type, f)
+        
+    def check_depth(self, depth, symbol):
+        if symbol.find('ltc') != -1:
+            type = 'ltc'
+        elif symbol.find('btc') != -1:
+            type = 'btc'
+        if self.traded_last_time(type) and getattr(self, '_pre_depth_str_%s' % type)  == json.dumps(depth):
+            logging.info('same depth %s' % depth)
+            raise DepthFailedException("same depth")
+        if self.traded_last_time(type) and getattr(self, '_pre_depth_str_%s' % type)  != json.dumps(depth):
+            self.mark_trade(False, type)
+        setattr(self, '_pre_depth_str_%s' % type, json.dumps(depth))
+        self._pre_depth_str = json.dumps(depth)
+
 
    # info = {
    #     "funds": {

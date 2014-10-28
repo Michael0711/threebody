@@ -24,7 +24,10 @@ class HuobiTrade(BaseTrade):
         sign = self._sign(params)
         params['sign'] = sign
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        r = requests.post(self._trade_host, data=params, headers=headers, **HTTP_ARGS)
+        if params.get('method', None) == 'sell' or params.get('method', None) == 'buy':
+            r = requests.post(self._trade_host, data=params, headers=headers, **TRADE_HTTP_ARGS)
+        else:
+            r = requests.post(self._trade_host, data=params, headers=headers, **HTTP_ARGS)
         return r.json()
 
     def user_info(self):
@@ -82,6 +85,7 @@ class HuobiTrade(BaseTrade):
             }
             if res['buy'][0] > res['sell'][0]:
                 raise DepthFailedException('huobi depth error[%s]' % res)
+            self.check_depth(res, symbol)
             return res
         except Exception as e:
             raise DepthFailedException("get depth data fail[%s]" % e)
@@ -95,5 +99,7 @@ class HuobiTrade(BaseTrade):
 if __name__ == "__main__":
     huobi = HuobiTrade(accounts.huobi)
     #print json.dumps(huobi.user_info(), indent=4)
-    #print json.dumps(huobi.depth(symbol='btc_cny'))
-    print json.dumps(huobi.trade(type='buy', rate=2800, amount=0.01, symbol='btc_cny'))
+    print json.dumps(huobi.depth(symbol='btc_cny'))
+    huobi.mark_trade(True)
+    print json.dumps(huobi.depth(symbol='btc_cny'))
+    #print json.dumps(huobi.trade(type='buy', rate=2800, amount=0.01, symbol='btc_cny'))

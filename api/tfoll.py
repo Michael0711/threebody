@@ -120,12 +120,32 @@ class TfollTrade(BaseTrade):
         url = self._api_host + "/api/depth/depth.html?type=%s" % symbol
         try:
             resp = requests.get(url, **HTTP_ARGS).json()
+
+            flag = False
+            while resp['bids'][0][0] >= resp['asks'][0][0]:
+                resp['bids'][0][1] = max(resp['bids'][0][1] - resp['asks'][0][1], 0)
+                resp['asks'][0][1] = max(resp['asks'][0][1] - resp['bids'][0][1], 0)
+                if resp['bids'][0][1] == 0:
+                    resp['bids'] = resp['bids'][1:]
+                if resp['asks'][0][1] == 0:
+                    resp['asks'] = resp['asks'][1:]
+                flag = True
+
             res = {
                 'buy' : resp['bids'][0],
-                'sell' : resp['asks'][0]
+                'sell' : resp['asks'][0],
+                'flag' : flag
             }
             if resp['bids'][0] > resp['asks'][0]:
-                raise DepthFailedException('tfoll get depth error [%s]' % res)
+                if resp['bids'][0] - resp['ask'][0] < 0.03:
+                    res['buy'][0] = resp['asks'][0][0]
+                    res['sell'][0] = resp['bids'][0][0]
+                else:
+                    raise DepthFailedException('tfoll get depth error')
+            if symbol == 1:
+                self.check_depth(res, 'btc_cny')
+            if symbol == 2:
+                self.check_depth(res, 'ltc_cny')
             return res
         except Exception as e:
             raise DepthFailedException('tfoll get depth failed [%s]' % e)
@@ -133,8 +153,9 @@ class TfollTrade(BaseTrade):
 if __name__ == "__main__":
     tfoll = TfollTrade(accounts.tfoll)
     pre = int(time.time())
-    print tfoll.user_info()
     #print tfoll.trade(type='buy', rate=2800, amount=0.01, symbol='btc_cny')
 
-    #print tfoll.depth(symbol='btc_cny')
+    print tfoll.depth(symbol='btc_cny')
+    tfoll.mark_trade(True)
+    print tfoll.depth(symbol='btc_cny')
 

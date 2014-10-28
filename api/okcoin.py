@@ -1,5 +1,4 @@
-#!/usr/bin/python                                                               
-# -*- coding: utf-8 -*-
+#!/usr/bin/python                                                               # -*- coding: utf-8 -*-
 from base import *
 from config.constant import * 
 from config import accounts
@@ -82,14 +81,22 @@ class OkcoinTrade(BaseTrade):
         try :
             r = self.s.get(url, **HTTP_ARGS) 
             s = r.json()
+            flag = False
+            while s['bids'][0][0] >= s['asks'][-1][0]:
+                s['bids'][0][1] = max(s['bids'][0][1] - s['asks'][-1][1], 0)
+                s['asks'][-1][1] = max(s['asks'][-1][1] - s['bids'][0][1], 0)
+                if s['bids'][0][1] == 0:
+                    s['bids'] = s['bids'][1:]
+                if s['asks'][-1][1] == 0:
+                    s['asks'].pop()
+                flag = True
+
             resp = {
-                'sell' : max(s['bids'][0], s['asks'][-1]),
-                'buy' : min(s['bids'][0], s['asks'][-1]),
-                'real_sell' : s['asks'][-1][0],
-                'real_buy' : s['bids'][0][0]
+                'sell' : s['asks'][-1],
+                'buy' : s['bids'][0],
+                'flag' : flag
             }
-            resp['sell'][1] = s['asks'][-1][1]
-            resp['buy'][1] = s['bids'][0][1]
+            self.check_depth(resp, symbol)
             return resp
         except Exception, e:
             raise DepthFailedException("okcoin depth failed! e[%s]" % e)
@@ -227,6 +234,7 @@ if __name__ == "__main__":
     logging.getLogger('requests').setLevel(logging.ERROR)
     okcoin = OkcoinTrade(accounts.okcoin)
     print okcoin.depth("btc_cny")
+    #print okcoin.user_info()
     #print okcoin.get_btc_deposit_address()
     #print okcoin.get_ltc_deposit_address()
     #okcoin.withdrow_btc(3.0, '1MK4PfVzFgLvwhmS972xYXb8kaqoQsy7D5')
