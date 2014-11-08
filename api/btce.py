@@ -292,8 +292,9 @@ if __name__ == "__main__" :
     logging.getLogger('requests').setLevel(logging.ERROR)
 
     e = BtceTrade(accounts.btce)
-    #print e.depth(symbol='ltc_btc')
-    #print e.user_info()
+    print accounts.btce
+    print e.depth(symbol='ltc_btc')
+    print e.user_info()
     #print e.trade(type='buy', rate=2000, amount=0.01, symbol='btc_usd')
     #print e.web_login()
     #print e.get_deposit_address(8)
