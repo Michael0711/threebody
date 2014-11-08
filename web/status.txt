@@ -1,0 +1,193 @@
+{
+    "huobi": {
+        "funds": {
+            "free": {
+                "ltc": 148.6596, 
+                "btc": 0.0005000000000000004, 
+                "cny": 267.62
+            }
+        }
+    }, 
+    "all": {
+        "total_share": 125, 
+        "total_btc": 21.46339973, 
+        "total_ltc": 1399.10044625, 
+        "total_cny": 78800.6272401525
+    }, 
+    "current_status": [
+        {
+            "can_trade": 0, 
+            "amount": 0.801, 
+            "rate": 1.0006, 
+            "type": "btc", 
+            "direct": "huobi_btcchina"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.03, 
+            "rate": 1.0004, 
+            "type": "btc", 
+            "direct": "huobi_okcoin"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 64.956, 
+            "rate": 1.0004, 
+            "type": "ltc", 
+            "direct": "btcchina_huobi"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.801, 
+            "rate": 1.0003, 
+            "type": "btc", 
+            "direct": "huobi_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 239.9109, 
+            "rate": 1.0, 
+            "type": "ltc", 
+            "direct": "okcoin_huobi"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 64.956, 
+            "rate": 1.0, 
+            "type": "ltc", 
+            "direct": "btcchina_okcoin"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.119, 
+            "rate": 1.0001, 
+            "type": "btc", 
+            "direct": "okcoin_btcchina"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.119, 
+            "rate": 0.9998, 
+            "type": "btc", 
+            "direct": "okcoin_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.4, 
+            "rate": 0.9993, 
+            "type": "btc", 
+            "direct": "btcchina_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 64.956, 
+            "rate": 0.9973, 
+            "type": "ltc", 
+            "direct": "btcchina_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 66.456886, 
+            "rate": 0.9968, 
+            "type": "ltc", 
+            "direct": "okcoin_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.11, 
+            "rate": 0.9966, 
+            "type": "ltc", 
+            "direct": "btce_huobi"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 0.052, 
+            "rate": 0.9931, 
+            "type": "ltc_btc", 
+            "direct": "btcchina_btce"
+        }
+    ], 
+    "trade": {
+        "huobi_btcchina": {
+            "ltc": 9.299999999999999, 
+            "btc": 0
+        }, 
+        "huobi_btce": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "btce_okcoin": {
+            "ltc": 491.5, 
+            "btc": 0
+        }, 
+        "huobi_okcoin": {
+            "ltc": 23.1, 
+            "btc": 0
+        }, 
+        "btce_huobi": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "btce_btcchina": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "okcoin_btcchina": {
+            "ltc": 11.1, 
+            "btc": 0
+        }, 
+        "btcchina_okcoin": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "okcoin_btce": {
+            "ltc": 0.1, 
+            "btc": 0
+        }, 
+        "btcchina_huobi": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "btcchina_btce": {
+            "ltc": 0, 
+            "btc": 0
+        }, 
+        "start_date": "2014-11-08 09:38:34", 
+        "okcoin_huobi": {
+            "ltc": 20.0, 
+            "btc": 0
+        }
+    }, 
+    "btce": {
+        "funds": {
+            "free": {
+                "ltc": 293.27784625, 
+                "btc": 21.45343014, 
+                "cny": 27122.811420152502
+            }
+        }
+    }, 
+    "btcchina": {
+        "funds": {
+            "free": {
+                "ltc": 20.493, 
+                "btc": 0.00086959, 
+                "cny": 27466.83582
+            }
+        }
+    }, 
+    "okcoin": {
+        "funds": {
+            "freezed": {
+                "ltc": 0.0, 
+                "btc": 0.0, 
+                "cny": 0.0
+            }, 
+            "free": {
+                "ltc": 936.67, 
+                "btc": 0.008599999999999998, 
+                "cny": 23943.36
+            }
+        }
+    }
+}
