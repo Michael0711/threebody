@@ -17,24 +17,24 @@
     "current_status": [
         {
             "can_trade": 2, 
-            "amount": 0.6698, 
-            "rate": 1.0245, 
+            "amount": 0.2022, 
+            "rate": 1.0181, 
             "type": "btc", 
             "direct": "btcchina_btce"
         }, 
         {
-            "can_trade": 3, 
-            "amount": 0.617, 
-            "rate": 1.019, 
+            "can_trade": 0, 
+            "amount": 242.835, 
+            "rate": 0.9941, 
             "type": "ltc", 
-            "direct": "btce_btcchina"
+            "direct": "btcchina_btce"
         }, 
         {
-            "can_trade": 2, 
-            "amount": 10.576, 
-            "rate": 0.9205, 
+            "can_trade": 3, 
+            "amount": 1.166, 
+            "rate": 0.9814, 
             "type": "ltc_btc", 
-            "direct": "btcchina_btce"
+            "direct": "btce_btcchina"
         }
     ], 
     "trade": {

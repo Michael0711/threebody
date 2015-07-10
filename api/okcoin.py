@@ -14,12 +14,16 @@ import json
 from collections import OrderedDict                                                                                                                       
 from pyquery import PyQuery as pq
 
+from websocketApp import *
+
 class OkcoinTrade(BaseTrade):
 
     def __init__(self, settings):
         BaseTrade.__init__(self, settings)
         self.s = requests.Session()
         self.s.headers.update(DEFAULT_HEADERS)
+        url = "wss://real.okcoin.cn:10440/websocket/okcoinapi"      #国内站请换成wss://real.okcoin.cn:10440/websocket/okcoinapi               
+        self.ws = WebSocketApp(url)        
         self._login()
 
     def _login(self):
@@ -79,8 +83,10 @@ class OkcoinTrade(BaseTrade):
         rand_num = str(random.randint(100000000,999999999))
         url = self._host + '/api/depth.do?symbol=%s&r=%s' % (symbol, rand_num)
         try :
-            r = self.s.get(url, **HTTP_ARGS) 
-            s = r.json()
+            #r = self.s.get(url, **HTTP_ARGS) 
+            #s = r.json()
+            s = self.ws.depth(symbol)
+
             flag = False
             while s['bids'][0][0] >= s['asks'][-1][0]:
                 s['bids'][0][1] = max(s['bids'][0][1] - s['asks'][-1][1], 0)
