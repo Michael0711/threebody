@@ -39,6 +39,7 @@ class BtceTrade(BaseTrade) :
         info = self.user_info(no_exception=True)
         REX_NONCE = r'you should send:(\d*)'
         self._nonce = int(re.search(REX_NONCE,info['error']).group(1)) - 1
+        print self._nonce
 
     def _get_nonce(self) :
         self._nonce = self._nonce + 1
@@ -81,7 +82,7 @@ class BtceTrade(BaseTrade) :
         headers = {
             "Content-type" : "application/x-www-form-urlencoded",
             'Sign' : sign,
-            'Key' : self._key,
+            'Key' : self._key
         }
         try :
             r = requests.post(url, data=post_param, headers=headers, timeout=self.TIMEOUT)
@@ -292,8 +293,8 @@ if __name__ == "__main__" :
     logging.getLogger('requests').setLevel(logging.ERROR)
 
     e = BtceTrade(accounts.btce)
-    print accounts.btce
-    print e.depth(symbol='ltc_btc')
+    #print accounts.btce
+    #print e.depth(symbol='ltc_btc')
     print e.user_info()
     #print e.trade(type='buy', rate=2000, amount=0.01, symbol='btc_usd')
     #print e.web_login()

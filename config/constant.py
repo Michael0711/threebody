@@ -22,26 +22,26 @@ DEFAULT_HEADERS = {
     "X-Requested-With":"XMLHttpRequest"
 }
 
-USD_TO_RMB = 6.15
+USD_TO_RMB = 6.21
 
 
 FLOW_CONTROL_LTC = {
-    'btce_okcoin' : [1.004, 20],
-    'btce_btcchina' : [1.004, 20],
-    'btce_huobi' : [1.004, 20],
-    'okcoin_btce' : [1.001, 30],
-    'btcchina_btce' : [1.001, 30],
-    'huobi_btce' : [1.001, 30],
-    'btce_btcchina' : [1.004, 20],
-    'default' : [1.0018, 20]
+    'btce_okcoin' : [1.01, 2],
+    'btce_btcchina' : [1.01, 2],
+    'btce_huobi' : [1.01, 2],
+    'okcoin_btce' : [1.01, 3],
+    'btcchina_btce' : [1.01, 3],
+    'huobi_btce' : [1.01, 3],
+    'btce_btcchina' : [1.01, 2],
+    'default' : [1.008, 2]
 }
 
 FLOW_CONTROL_BTC = {
-    'btce_okcoin' : [1.004, 0.3],
-    'btce_btcchina' : [1.004, 0.3],
-    'btce_huobi' : [1.004, 0.3],
-    'okcoin_btce' : [1.001, 0.3],
-    'btcchina_btce' : [1.001, 0.3],
-    'huobi_btce' : [1.001, 0.3],
-    'default' : [1.002, 0.3]
+    'btce_okcoin' : [1.01, 0.02],
+    'btce_btcchina' : [1.04, 0.02],
+    'btce_huobi' : [1.01, 0.02],
+    'okcoin_btce' : [1.01, 0.02],
+    'btcchina_btce' : [1.008, 0.02],
+    'huobi_btce' : [1.008, 0.03],
+    'default' : [1.008, 0.03]
 }

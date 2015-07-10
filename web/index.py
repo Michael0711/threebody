@@ -12,7 +12,7 @@ import json
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         is_all = self.get_argument("all", None)
-        fi = file("status.txt")
+        fi = file("/root/threebody/web/status.txt")
         content = json.loads(fi.read())
         if is_all != None:
             content = content['all']

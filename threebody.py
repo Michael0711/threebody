@@ -18,6 +18,7 @@ from api.chbtc import *
 from lib.log import *
 
 from config import accounts
+import logging
 
 class ThreeBody(object):
 
@@ -38,7 +39,7 @@ class ThreeBody(object):
         self.btce = BtceTrade(accounts.btce)
         #self.tfoll = TfollTrade(accounts.tfoll)
         self.btcchina = BtcchinaTrade(accounts.btcchina)
-        self.huobi = HuobiTrade(accounts.huobi)
+        #self.huobi = HuobiTrade(accounts.huobi)
         #self.chbtc = ChbtcTrade(accounts.chbtc)
         self.ticker = 0
         self.total_status = json.loads(file("web/status.txt").read())
@@ -70,7 +71,9 @@ class ThreeBody(object):
             return _wrap
 
         #self.account_list = ['okcoin', 'tfoll', 'btcchina', 'huobi', 'btce']
-        self.account_list = ['okcoin', 'huobi', 'btcchina', 'btce']
+        #self.account_list = ['okcoin', 'btce', 'btcchina', 'huobi']
+        self.account_list = ['okcoin', 'btce', 'btcchina']
+        #self.account_list = ['okcoin', 'btce']
 
         if self.total_status.get("trade", None) == None:
             self.total_status['trade'] = {}
@@ -434,7 +437,9 @@ class ThreeBody(object):
 
 
     def run(self):
-        Log.init("threebody.log")
+        #Log.init("threebody.log")
+        #Log.init()
+
         pre = int(time.time())
         while True:
             try:
@@ -449,7 +454,7 @@ class ThreeBody(object):
                 fi = file("web/status.txt", "w")
                 fi.write(json.dumps(self.total_status, indent=4))
                 fi.close()
-                time.sleep(max(0.55 - time.time() + pre, 0))
+                #time.sleep(max(0.55 - time.time() + pre, 0))
             except SeriousErrorException as e:
                 Log.error(e)
                 break
@@ -457,6 +462,9 @@ class ThreeBody(object):
                 Log.error(e)
 
 if __name__ == '__main__':
+    logging.basicConfig(filename="threebody.log", format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    #logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    logging.getLogger('requests').setLevel(logging.ERROR)
     three_body = ThreeBody()
     three_body.run()
 
