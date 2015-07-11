@@ -33,7 +33,7 @@ FLOW_CONTROL_LTC = {
     'btcchina_btce' : [1.01, 3],
     'huobi_btce' : [1.01, 3],
     'btce_btcchina' : [1.01, 2],
-    'default' : [1.008, 2]
+    'default' : [1.018, 2]
 }
 
 FLOW_CONTROL_BTC = {
@@ -43,5 +43,5 @@ FLOW_CONTROL_BTC = {
     'okcoin_btce' : [1.01, 0.02],
     'btcchina_btce' : [1.008, 0.02],
     'huobi_btce' : [1.008, 0.03],
-    'default' : [1.008, 0.03]
+    'default' : [1.018, 0.03]
 }

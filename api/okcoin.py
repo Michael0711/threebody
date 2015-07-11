@@ -23,7 +23,8 @@ class OkcoinTrade(BaseTrade):
         self.s = requests.Session()
         self.s.headers.update(DEFAULT_HEADERS)
         url = "wss://real.okcoin.cn:10440/websocket/okcoinapi"      #国内站请换成wss://real.okcoin.cn:10440/websocket/okcoinapi               
-        self.ws = WebSocketApp(url)        
+        self.ws_ltc = WebSocketApp(url, symbol='ltc_cny')        
+        self.ws_btc = WebSocketApp(url, symbol='btc_cny')        
         self._login()
 
     def _login(self):
@@ -83,9 +84,12 @@ class OkcoinTrade(BaseTrade):
         rand_num = str(random.randint(100000000,999999999))
         url = self._host + '/api/depth.do?symbol=%s&r=%s' % (symbol, rand_num)
         try :
-            #r = self.s.get(url, **HTTP_ARGS) 
-            #s = r.json()
-            s = self.ws.depth(symbol)
+            r = self.s.get(url, **HTTP_ARGS) 
+            s = r.json()
+           # if symbol == 'btc_cny':
+           #     s = self.ws_btc.depth()
+           # else:
+           #     s = self.ws_ltc.depth()
 
             flag = False
             while s['bids'][0][0] >= s['asks'][-1][0]:
@@ -240,7 +244,13 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
     logging.getLogger('requests').setLevel(logging.ERROR)
     okcoin = OkcoinTrade(accounts.okcoin)
-    print okcoin.depth("ltc_cny")
+    while True:
+
+        print "btc\n"
+        print okcoin.depth("btc_cny")
+        time.sleep(1)
+        print "ltc\n"
+        print okcoin.depth("ltc_cny")
     #print okcoin.user_info()
     #print okcoin.get_btc_deposit_address()
     #print okcoin.get_ltc_deposit_address()

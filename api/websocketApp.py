@@ -19,7 +19,7 @@ class WebSocketApp(object):
     """
     def __init__(self, url,
                  on_open = None, on_message = None, on_error = None, 
-                 on_close = None):
+                 on_close = None, symbol='btc_cny'):
         """
         url: websocket url.
         on_open: callable object which is called at opening websocket.
@@ -38,6 +38,8 @@ class WebSocketApp(object):
         self.url = url
         self.sock = WebSocket()
         self.sock.connect(self.url)
+        self.symbol = ''.join(symbol.split('_'))
+        self.send("{'event':'addChannel','channel':'ok_%s_depth'}" % self.symbol)
 
     def send(self, data):
         """
@@ -51,17 +53,13 @@ class WebSocketApp(object):
         """
         self.sock.close()
 
-    def depth(self, symbol='ltc_cny'):
+    def depth(self, symbol='btc_cny'):
         try:
-            symbol = "".join(symbol.split("_"))
-            self.send("{'event':'addChannel','channel':'ok_%s_depth'}" % symbol)
             data = self.sock.recv()
             resp = json.loads(data)
             return resp[0]['data']
         except Exception, e:
             logging.info("except[%s]" % e)
-        finally:
-            self.sock.close()
 
     def _run_with_no_err(self, callback, *args):
         if callback:

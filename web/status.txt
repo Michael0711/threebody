@@ -2,37 +2,65 @@
     "btcchina": {
         "funds": {
             "free": {
-                "ltc": 50.60617, 
-                "btc": 1.61076959, 
-                "cny": 367.22366
+                "ltc": 85.70617, 
+                "btc": 1.28076959, 
+                "cny": 1.0318499999999986
             }
         }
     }, 
     "all": {
         "total_share": 125, 
-        "total_btc": 1.60084847, 
-        "total_ltc": 50.10649364, 
-        "total_cny": 317.6830520157
+        "total_btc": 1.57104847, 
+        "total_ltc": 379.70649363999996, 
+        "total_cny": 1716.8312420157
     }, 
     "current_status": [
         {
             "can_trade": 2, 
-            "amount": 0.2022, 
-            "rate": 1.0181, 
+            "amount": 8.0, 
+            "rate": 1.0143, 
+            "type": "btc", 
+            "direct": "okcoin_btce"
+        }, 
+        {
+            "can_trade": 2, 
+            "amount": 0.24, 
+            "rate": 1.0139, 
             "type": "btc", 
             "direct": "btcchina_btce"
         }, 
         {
             "can_trade": 0, 
-            "amount": 242.835, 
-            "rate": 0.9941, 
+            "amount": 19.029, 
+            "rate": 1.0045, 
+            "type": "ltc", 
+            "direct": "okcoin_btce"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 1.125, 
+            "rate": 1.0, 
             "type": "ltc", 
             "direct": "btcchina_btce"
         }, 
         {
+            "can_trade": 0, 
+            "amount": 0.24, 
+            "rate": 0.9996, 
+            "type": "btc", 
+            "direct": "btcchina_okcoin"
+        }, 
+        {
+            "can_trade": 0, 
+            "amount": 19.029, 
+            "rate": 0.9972, 
+            "type": "ltc", 
+            "direct": "okcoin_btcchina"
+        }, 
+        {
             "can_trade": 3, 
-            "amount": 1.166, 
-            "rate": 0.9814, 
+            "amount": 0.55549036, 
+            "rate": 0.9943, 
             "type": "ltc_btc", 
             "direct": "btce_btcchina"
         }
@@ -47,12 +75,12 @@
             "btc": 0
         }, 
         "okcoin_btcchina": {
-            "ltc": 149.79999999999998, 
-            "btc": 1.500000000000001
+            "ltc": 2.1, 
+            "btc": 0
         }, 
         "btcchina_okcoin": {
-            "ltc": 191.59999999999997, 
-            "btc": 0.06
+            "ltc": 2.0, 
+            "btc": 0
         }, 
         "okcoin_btce": {
             "ltc": 0, 
@@ -62,7 +90,7 @@
             "ltc": 0, 
             "btc": 0
         }, 
-        "start_date": "2015-07-10 17:12:17"
+        "start_date": "2015-07-11 09:43:40"
     }, 
     "btce": {
         "funds": {
@@ -81,9 +109,9 @@
                 "cny": 0.0
             }, 
             "free": {
-                "ltc": 329.5, 
-                "btc": 0.00020000000000000052, 
-                "cny": 1339.46
+                "ltc": 294.5, 
+                "btc": 0.30019999999999997, 
+                "cny": 1765.34
             }
         }
     }
