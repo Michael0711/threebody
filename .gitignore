@@ -1,3 +1,4 @@
 settings.py
+status.txt
 *.pyc
 *.swp
