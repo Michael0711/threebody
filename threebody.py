@@ -39,10 +39,10 @@ class ThreeBody(object):
         self.btce = BtceTrade(accounts.btce)
         #self.tfoll = TfollTrade(accounts.tfoll)
         self.btcchina = BtcchinaTrade(accounts.btcchina)
-        #self.huobi = HuobiTrade(accounts.huobi)
+        self.huobi = HuobiTrade(accounts.huobi)
         #self.chbtc = ChbtcTrade(accounts.chbtc)
         self.ticker = 0
-        self.total_status = json.loads(file("web/status.txt").read())
+        #self.total_status = json.loads(file("web/status.txt").read())
         self.total_status = {}
         self.total_share = 125
 
@@ -71,8 +71,8 @@ class ThreeBody(object):
             return _wrap
 
         #self.account_list = ['okcoin', 'tfoll', 'btcchina', 'huobi', 'btce']
-        #self.account_list = ['okcoin', 'btce', 'btcchina', 'huobi']
-        self.account_list = ['okcoin', 'btce', 'btcchina']
+        #self.account_list = ['okcoin', 'btcchina', 'huobi']
+        self.account_list = ['okcoin', 'btce', 'btcchina', 'huobi']
         #self.account_list = ['okcoin', 'btce']
 
         if self.total_status.get("trade", None) == None:
@@ -435,14 +435,28 @@ class ThreeBody(object):
                 continue
 
 
+    def update_file(self, filename):
+        logger = logging.getLogger()
+        logger.handlers[0].stream.close()
+        logger.removeHandler(logger.handlers[0])
+        file_handler = logging.FileHandler(filename)
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(message)s")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        self.pre_filename = filename
 
     def run(self):
-        #Log.init("threebody.log")
-        #Log.init()
+        self.pre_filename = "threebody-%s.log" % datetime.now().strftime("%m-%d")
+        logging.basicConfig(filename=self.pre_filename, format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+        logging.getLogger('requests').setLevel(logging.ERROR)
 
         pre = int(time.time())
         while True:
             try:
+                filename = "threebody-%s.log" % datetime.now().strftime("%m-%d")
+                if self.pre_filename != filename:
+                    self.update_file(filename)
                 Log.reset_id('threebody')
                 cur = time.time()
                 print '-----------------------%s-----------------------' % ( int(cur - pre) )
@@ -452,7 +466,7 @@ class ThreeBody(object):
                 self.trade()
                 pre = cur
                 fi = file("web/status.txt", "w")
-                fi.write(json.dumps(self.total_status, indent=4))
+                fi.write(json.dumps(self.total_status['all'], indent=4))
                 fi.close()
                 #time.sleep(max(0.55 - time.time() + pre, 0))
             except SeriousErrorException as e:
@@ -462,9 +476,7 @@ class ThreeBody(object):
                 Log.error(e)
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="threebody.log", format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    #logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    logging.getLogger('requests').setLevel(logging.ERROR)
+
     three_body = ThreeBody()
     three_body.run()
 

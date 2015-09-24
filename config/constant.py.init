@@ -22,26 +22,32 @@ DEFAULT_HEADERS = {
     "X-Requested-With":"XMLHttpRequest"
 }
 
-USD_TO_RMB = 6.21
+# exchange rate, if you use btce, don't ignore it. 
+USD_TO_RMB = 6.37
 
-
+#LTC trade control
+# Take 'huobi_okcoin' : [1.006, 10］as an example:
+# It means that only when you sell ltc at huobi market, buy equal account ltc at okcoin market 
+# and it can earn equal or large thant 0.6%, trigger the trade. 
+# 10 is the maxinum account of one api trade.
 FLOW_CONTROL_LTC = {
-    'btce_okcoin' : [1.01, 2],
-    'btce_btcchina' : [1.01, 2],
-    'btce_huobi' : [1.01, 2],
-    'okcoin_btce' : [1.01, 3],
-    'btcchina_btce' : [1.01, 3],
-    'huobi_btce' : [1.01, 3],
-    'btce_btcchina' : [1.01, 2],
-    'default' : [1.018, 2]
+    'btce_okcoin' : [1.006, 10],
+    'btce_btcchina' : [1.006, 10],
+    'btce_huobi' : [1.006, 10],
+    'okcoin_btce' : [1.01, 10],
+    'btcchina_btce' : [1.01, 10],
+    'huobi_btce' : [1.01, 10],
+    'btce_btcchina' : [1.019, 10],
+    'default' : [1.008, 10]
 }
 
+#BTC trade control
 FLOW_CONTROL_BTC = {
-    'btce_okcoin' : [1.01, 0.02],
-    'btce_btcchina' : [1.04, 0.02],
-    'btce_huobi' : [1.01, 0.02],
-    'okcoin_btce' : [1.01, 0.02],
-    'btcchina_btce' : [1.008, 0.02],
-    'huobi_btce' : [1.008, 0.03],
-    'default' : [1.018, 0.03]
+    'btce_okcoin' : [1.019, 0.05],
+    'btce_btcchina' : [1.019, 0.05],
+    'btce_huobi' : [1.019, 0.05],
+    'okcoin_btce' : [1.01, 0.05],
+    'btcchina_btce' : [1.01, 0.05],
+    'huobi_btce' : [1.01, 0.05],
+    'default' : [1.008, 0.05]
 }

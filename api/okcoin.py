@@ -14,7 +14,7 @@ import json
 from collections import OrderedDict                                                                                                                       
 from pyquery import PyQuery as pq
 
-from websocketApp import *
+#from websocketApp import *
 
 class OkcoinTrade(BaseTrade):
 
@@ -22,9 +22,9 @@ class OkcoinTrade(BaseTrade):
         BaseTrade.__init__(self, settings)
         self.s = requests.Session()
         self.s.headers.update(DEFAULT_HEADERS)
-        url = "wss://real.okcoin.cn:10440/websocket/okcoinapi"      #国内站请换成wss://real.okcoin.cn:10440/websocket/okcoinapi               
-        self.ws_ltc = WebSocketApp(url, symbol='ltc_cny')        
-        self.ws_btc = WebSocketApp(url, symbol='btc_cny')        
+        #url = "wss://real.okcoin.cn:10440/websocket/okcoinapi"      #国内站请换成wss://real.okcoin.cn:10440/websocket/okcoinapi               
+        #self.ws_ltc = WebSocketApp(url, symbol='ltc_cny')        
+        #self.ws_btc = WebSocketApp(url, symbol='btc_cny')        
         self._login()
 
     def _login(self):
