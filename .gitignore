@@ -1,4 +1,6 @@
 settings.py
+constant.py
+account.py
 status.txt
 *.pyc
 *.swp
