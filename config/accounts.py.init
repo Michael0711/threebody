@@ -1,0 +1,67 @@
+#!/usr/bin/python                                                               
+# -*- coding: utf-8 -*-
+
+#https://www.okcoin.cn/
+okcoin = { 
+    'host' : 'https://www.okcoin.cn',
+    # optional
+    # If you open email verify, this config is used to transfer coin automatically. 
+    'imap_host' : '**********',
+    'imap_username' : '************',
+    'imap_password' : '************',
+    'src_fid' : '***********',
+    'dst_fid' : '**********',
+    'ltc_withdraw_addr' : '******************',
+    'btc_withdraw_addr' : '******************',
+    'private_key' : '***************', #totpCode
+
+    # Your okcoin important information. 
+    'user_name' : '****************',
+    'password' : '***************',
+    'trade_pwd' : '**************',
+}
+
+#https://btc-e.com/
+btce = {
+    'host' : 'https://btc-e.com',
+
+    # Your btce important information. 
+    'user_name' : '****************',
+    'password' : '****************',
+    'key': '*******************************',
+    'sec' : '************************'
+
+    # optional
+    # If you open email verify, this config is used to transfer coin automatically. 
+    'imap_host' : '*************',                                                                                                                           
+    'imap_username' : '***************',
+    'imap_password' : '**************',
+    'src_fid' : '**********',
+    'dst_fid' : '**********',
+    'private_key' : '*************',
+}
+
+#https://www.huobi.com/
+huobi = {
+    'trade_host' : 'https://api.huobi.com/apiv2.php',
+
+    # Your huobi important information. 
+    'user_name' : '****************',
+    'password' : '***************',
+    'access_key' : '********************',
+    'secret_key' : '***********************'
+}
+
+btcchina = {
+    # Your btcchina important information. 
+    'access_key' : '********************',
+    'secret_key' : '*******************',
+    'order_password' : '**********'
+}
+
+#https://www.chbtc.com/
+chbtc = {
+    # Your chbtc important information. 
+    'access_key' : '********************',
+    'secret_key' : '********************'
+}          
