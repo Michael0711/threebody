@@ -2,5 +2,6 @@ settings.py
 config/account.py
 config/constant.py
 web/status.txt
+*.log
 *.pyc
 *.swp

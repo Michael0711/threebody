@@ -50,9 +50,6 @@ class ThreeBody(object):
             if account == 'chbtc':
                 self.chbtc = ChbtcTrade(accounts.chbtc)
 
-        self.account_list = ['okcoin', 'btcchina']
-        #self.account_list = ['okcoin', 'btce']
-
         self.ticker = 0
         #self.total_status = json.loads(file("web/status.txt").read())
         self.total_status = {}
