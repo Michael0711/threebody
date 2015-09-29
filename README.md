@@ -25,6 +25,6 @@ The trade control configure in in `constant.py` file. You can use the default se
 ```
 python threebody.py
 ```
-###monitor
+###Monitor
 The log is created in current directory. You can `tail` it to monitor the status.  
 
