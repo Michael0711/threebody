@@ -62,7 +62,7 @@ class ChbtcTrade(BaseTrade):
             response = urllib2.urlopen(request, timeout=2)
             doc = json.loads(response.read())
             return doc
-        except Exception,ex:
+        except Exception as ex:
             raise Exception(ex)
 
    # info = {
@@ -93,7 +93,7 @@ class ChbtcTrade(BaseTrade):
                 }
             }
             return res
-        except Exception,ex:
+        except Exception as ex:
             raise UserInfoFailedException('chbtc[%s]' % ex)
     
     def trade(self, type, rate, amount, symbol='ltc_cny'):
@@ -114,7 +114,7 @@ class ChbtcTrade(BaseTrade):
             if res['buy'][0] > res['sell'][0]:
                 raise DepthFailedException("chbtc get depth data error[bids > asks]")
             return res
-        except Exception, e:
+        except Exception as e:
             raise DepthFailedException("chbtc get depth data fail[%s]" % e)
     
 

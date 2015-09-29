@@ -43,7 +43,7 @@ class OkcoinTrade(BaseTrade):
             else:
                 raise WebLoginException("okcoin login failed. resultCode[%s]" % res['resultCode'])
             
-        except Exception, e:
+        except Exception as e:
             raise WebLoginException('okcoin login exception e[%s]' % e) 
 
     def _gen_sign(self, order_param) :
@@ -108,7 +108,7 @@ class OkcoinTrade(BaseTrade):
             }
             self.check_depth(resp, symbol)
             return resp
-        except Exception, e:
+        except Exception as e:
             raise DepthFailedException("okcoin depth failed! e[%s]" % e)
 
     def user_info(self):
@@ -200,7 +200,7 @@ class OkcoinTrade(BaseTrade):
             for i in range(60):
                 try:
                     mid, url = imap.check_ok_new_emails(self._src_fid)
-                except Exception, info:
+                except Exception as info:
                     logging.error("IMAP check email fail %s", info)
                     imap = ImapClient(self._imap_host, self._imap_username, self._imap_password)
                     imap.login()

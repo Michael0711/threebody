@@ -69,7 +69,7 @@ class BtceTrade(BaseTrade) :
                 resp['sell'][1] = float(resp['sell'][1])
                 resp['buy'][1] = float(resp['buy'][1])
             return resp
-        except Exception, e:
+        except Exception as e:
             raise DepthFailedException("btce get depth error[%s]" % e)
 
     def user_info(self, no_exception=False) :
@@ -101,7 +101,7 @@ class BtceTrade(BaseTrade) :
                 }
             }
             return self.format_info(res)
-        except Exception, e:
+        except Exception as e:
             raise UserInfoFailedException("btce get userinfo error[%s]" % e)
     
     def trade(self, type, rate, amount, symbol='ltc_btc') :
@@ -132,7 +132,7 @@ class BtceTrade(BaseTrade) :
             logging.debug('url[%s] resp[%s]' % (url, r.text))
             resp = r.json()
             return resp
-        except Exception, e:
+        except Exception as e:
             logging.warning("trade failed! e[%s]" % e)
             return False 
 
@@ -257,7 +257,7 @@ class BtceTrade(BaseTrade) :
             for i in range(60):
                 try:
                     mid, url = imap.check_new_emails(self._src_fid)
-                except Exception, info:
+                except Exception as info:
                     logging.error("IMAP check email fail %s", info)
                     imap = ImapClient(self._imap_host, self._imap_username, self._imap_password)
                     imap.login()

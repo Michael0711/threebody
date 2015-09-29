@@ -58,14 +58,14 @@ class WebSocketApp(object):
             data = self.sock.recv()
             resp = json.loads(data)
             return resp[0]['data']
-        except Exception, e:
+        except Exception as e:
             logging.info("except[%s]" % e)
 
     def _run_with_no_err(self, callback, *args):
         if callback:
             try:
                 callback(self, *args)
-            except Exception, e:
+            except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.error(e)
 

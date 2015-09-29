@@ -20,6 +20,7 @@ from lib.log import *
 from config import accounts
 import logging
 
+IGNORE_WORD = ['__builtins__', '__file__', '__package__', '__name__', '__doc__',]
 class ThreeBody(object):
 
     TRADE_STATUS_NO = 0
@@ -35,16 +36,26 @@ class ThreeBody(object):
     trade_ltc_btc_status = {
     }
     def __init__(self):
-        self.okcoin = OkcoinTrade(accounts.okcoin)
-        self.btce = BtceTrade(accounts.btce)
-        #self.tfoll = TfollTrade(accounts.tfoll)
-        self.btcchina = BtcchinaTrade(accounts.btcchina)
-        self.huobi = HuobiTrade(accounts.huobi)
-        #self.chbtc = ChbtcTrade(accounts.chbtc)
+        self.account_list = [item for item in accounts.__dict__.keys() if item not in IGNORE_WORD]
+
+        for account in self.account_list:
+            if account == 'okcoin':
+                self.okcoin = OkcoinTrade(accounts.okcoin)
+            if account == 'btcchina':
+                self.btcchina = BtcchinaTrade(accounts.btcchina)
+            if account == 'btce':
+                self.btce = BtceTrade(accounts.btce)
+            if account == 'huobi':
+                self.huobi = HuobiTrade(accounts.huobi)
+            if account == 'chbtc':
+                self.chbtc = ChbtcTrade(accounts.chbtc)
+
+        self.account_list = ['okcoin', 'btcchina']
+        #self.account_list = ['okcoin', 'btce']
+
         self.ticker = 0
         #self.total_status = json.loads(file("web/status.txt").read())
         self.total_status = {}
-        self.total_share = 125
 
         def _get_depth(name, type):
             def _wrap():
@@ -70,10 +81,6 @@ class ThreeBody(object):
                 setattr(self, "%s_info" % name, _info)
             return _wrap
 
-        #self.account_list = ['okcoin', 'tfoll', 'btcchina', 'huobi', 'btce']
-        #self.account_list = ['okcoin', 'btcchina', 'huobi']
-        self.account_list = ['okcoin', 'btce', 'btcchina', 'huobi']
-        #self.account_list = ['okcoin', 'btce']
 
         if self.total_status.get("trade", None) == None:
             self.total_status['trade'] = {}
@@ -272,7 +279,6 @@ class ThreeBody(object):
             "total_cny" : total_cny,
             "total_ltc" : total_ltc, 
             "total_btc" : total_btc,
-            'total_share' : self.total_share
         }
 
     def search(self):
@@ -353,7 +359,7 @@ class ThreeBody(object):
                                 amount=amount, symbol='%s_cny' % type)
         except SeriousErrorException as e:
             trader.set_stop(True)
-        except TradeFailedException, e:
+        except TradeFailedException as e:
             if str(e).find("timed out") != -1:
                 Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
                 gevent.sleep(0.5)
@@ -375,7 +381,7 @@ class ThreeBody(object):
                                 amount=amount, symbol='%s_cny' % type)
         except SeriousErrorException as e:
             trader.set_stop(True)
-        except TradeFailedException, e:
+        except TradeFailedException as e:
             if str(e).find("timed out") != -1:
                 Log.error("TradeFailedException timeout[%s], trade_name[%s], rate[%s], amount[%s], type[%s]" % (time, trade_name, rate, amount, type))
                 gevent.sleep(0.5)
