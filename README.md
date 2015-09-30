@@ -20,7 +20,7 @@ cp accounts.py.init accounts.py
 cp constant.py.init constant.py
 ```
 All accounts information is in `accounts.py` file, you need to config at least two trade platform.
-The trade control configure in in `constant.py` file. You can use the default settings at first.
+The trade control configure in in `constant.py` file. You can use the default settings at begining.
 ###Run
 ```
 python threebody.py
