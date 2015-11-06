@@ -125,14 +125,6 @@ class BtcchinaTrade(BaseTrade):
             if res['sell'][0] < res['buy'][0]:
                 raise DepthFailedException("btcchina get depth error[%s]" % res)
             return res
-        elif symbol == 'ltc_btc':
-            res = {
-                'sell' : [resp['market_depth_ltcbtc']['ask'][0]['price'], resp['market_depth_ltcbtc']['ask'][0]['amount']],
-                'buy' : [resp['market_depth_ltcbtc']['bid'][0]['price'],resp['market_depth_ltcbtc']['bid'][0]['amount']]
-            }
-            if res['sell'][0] < res['buy'][0]:
-                raise DepthFailedException("btcchina get depth error[%s]" % res)
-            return res
         elif symbol == 'all':
             ltc = {
                 'sell' : [resp['market_depth_ltccny']['ask'][0]['price'], resp['market_depth_ltccny']['ask'][0]['amount']],
@@ -146,13 +138,7 @@ class BtcchinaTrade(BaseTrade):
             }
             if btc['sell'][0] < btc['buy'][0]:
                 raise DepthFailedException("btcchina get btc depth error[%s]" % res)
-            ltc_btc = {
-                'sell' : [resp['market_depth_ltcbtc']['ask'][0]['price'], resp['market_depth_ltcbtc']['ask'][0]['amount']],
-                'buy' : [resp['market_depth_ltcbtc']['bid'][0]['price'],resp['market_depth_ltcbtc']['bid'][0]['amount']]
-            }
-            if ltc_btc['sell'][0] < ltc_btc['buy'][0]:
-                raise DepthFailedException("btcchina get ltc_btc depth error[%s]" % res)
-            return ltc,btc,ltc_btc
+            return ltc,btc
 
 
     def trade(self, type, rate, amount, symbol='ltc_cny') :

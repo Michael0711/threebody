@@ -33,8 +33,6 @@ class ThreeBody(object):
     }
     trade_btc_status = {
     }
-    trade_ltc_btc_status = {
-    }
     def __init__(self):
         self.account_list = [item for item in accounts.__dict__.keys() if item not in IGNORE_WORD]
 
@@ -57,18 +55,14 @@ class ThreeBody(object):
         def _get_depth(name, type):
             def _wrap():
                 if name == 'btcchina' and type == 'all':
-                    _ltc_depth, _btc_depth, _ltc_btc_depth = getattr(self, name).depth(symbol='all')
+                    _ltc_depth, _btc_depth = getattr(self, name).depth(symbol='all')
                     setattr(self, "%s_%s_depth" % (name, 'ltc'), _ltc_depth)
                     setattr(self, "%s_%s_depth" % (name, 'btc'), _btc_depth)
-                    setattr(self, "%s_%s_depth" % (name, 'ltc_btc'), _ltc_btc_depth)
                     return
-                if type == 'ltc_btc':
-                    _depth = getattr(self, name).depth(symbol=type)
+                if name == 'btce':
+                    _depth = getattr(self, name).depth(symbol='%s_usd' % type)
                 else:
-                    if name == 'btce':
-                        _depth = getattr(self, name).depth(symbol='%s_usd' % type)
-                    else:
-                        _depth = getattr(self, name).depth(symbol='%s_cny' % type)
+                    _depth = getattr(self, name).depth(symbol='%s_cny' % type)
                 setattr(self, "%s_%s_depth" % (name, type), _depth)
             return _wrap
 
@@ -91,13 +85,9 @@ class ThreeBody(object):
                 }
 
         for account_name in self.account_list:
-            if account_name == 'btcchina':
-                setattr(self, "get_%s_all_depth" % account_name, _get_depth(account_name, 'all'))
             setattr(self, "get_%s_ltc_depth" % account_name, _get_depth(account_name, 'ltc'))
             setattr(self, "get_%s_btc_depth" % account_name, _get_depth(account_name, 'btc'))
             setattr(self, "get_%s_info" % account_name, _get_info(account_name))
-            if account_name == 'btcchina' or account_name == 'btce':
-                setattr(self, "get_%s_ltc_btc_depth" % account_name, _get_depth(account_name, 'ltc_btc'))
 
         self._concurrency = 100
 
@@ -138,8 +128,6 @@ class ThreeBody(object):
             setattr(self, "%s_ltc_depth" % account_name, None)
             setattr(self, "%s_btc_depth" % account_name, None)
             setattr(self, "%s_info" % account_name, None)
-            if account_name in ['btce', 'btcchina']:
-                setattr(self, "%s_ltc_btc_depth" % account_name, None)
 
     def check_depth_and_info(self):
         for account_name in self.account_list:
@@ -154,12 +142,6 @@ class ThreeBody(object):
                 self.set_trade_status(account_name, 'btc', False)
             else:
                 self.set_trade_status(account_name, 'btc', True)
-            if account_name in ['btce', 'btcchina']:
-                ltc_btc_depth = getattr(self, "%s_ltc_btc_depth" % account_name, None)
-                if ltc_btc_depth == None or info == None:
-                    self.set_trade_status(account_name, 'ltc_btc', False)
-                else:
-                    self.set_trade_status(account_name, 'ltc_btc', True)
 
     def _get_flow_control(self, type):
         if type == 'ltc':
@@ -177,24 +159,6 @@ class ThreeBody(object):
         src_info = getattr(self, "%s_info" % src)
         dst_info = getattr(self, "%s_info" % dst) 
         type = status['type']
-        if type == 'ltc_btc':
-            src,dst = status['direct'].split("_")
-            src_info = getattr(self, "%s_info" % src)
-            dst_info = getattr(self, "%s_info" % dst) 
-            if src_info['funds']['free']['ltc'] < _small('ltc'):
-                status['can_trade'] = self.TRADE_STATUS_LESS_COIN
-                return
-            if dst_info['funds']['free']['btc'] < _small('btc'):
-                status['can_trade'] = self.TRADE_STATUS_LESS_CNY
-                return
-            if status['rate'] < 1.002:
-                status['can_trade'] = self.TRADE_STATUS_NO
-                return
-            if status['amount'] < _small('ltc'):
-                status['can_trade'] = self.TRADE_STATUS_LESS_DEPTH
-                return
-            status['can_trade'] = self.TRADE_STATUS_YES
-            return
 
         dst_depth = getattr(self, "%s_%s_depth" % (dst, type)) 
         src_depth = getattr(self, '%s_%s_depth' % (src, type))
@@ -235,13 +199,8 @@ class ThreeBody(object):
         pool2 = Pool(self._concurrency)
 
         for account_name in self.account_list:
-            if account_name == 'btcchina':
-                pool2.spawn(getattr(self, "get_%s_all_depth" % account_name))
-                continue
             pool2.spawn(getattr(self, "get_%s_ltc_depth" % account_name))
             pool2.spawn(getattr(self, "get_%s_btc_depth" % account_name))
-            if account_name in ['btce', 'btcchina']:
-                pool2.spawn(getattr(self, "get_%s_ltc_btc_depth" % account_name))
         pool2.join()
         self.check_depth_and_info()
 
@@ -294,12 +253,6 @@ class ThreeBody(object):
                         self.status_list.append(self.get_status(getattr(self, "%s_btc_depth" % account1), \
                                                                 getattr(self, "%s_btc_depth" % account2), \
                                                                 account1, account2, 'btc'))
-                    if account1 in ['btce', 'btcchina'] and account2 in ['btce', 'btcchina']:
-                        if self.get_trade_status(account1, 'ltc_btc') and self.get_trade_status(account2, 'ltc_btc'):
-                            self.status_list.append(self.get_status(getattr(self, "%s_ltc_btc_depth" % account1), \
-                                                                    getattr(self, "%s_ltc_btc_depth" % account2), \
-                                                                    account1, account2, 'ltc_btc'))
-
 
         self.status_list.sort(lambda a, b: int((b['rate'] - a['rate']) * 10000))
 
@@ -319,7 +272,6 @@ class ThreeBody(object):
 
         btc_log_str = ''
         ltc_log_str = ''
-        ltc_btc_log_str = ''
         for item in self.status_list:
             if item['type'] == 'btc':
                 item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
@@ -327,9 +279,6 @@ class ThreeBody(object):
             if item['type'] == 'ltc':
                 item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
                 ltc_log_str = "%s %s" % (ltc_log_str, item_log)
-            if item['type'] == 'ltc_btc':
-                item_log = "%s[%s]" % (item['direct'],  status_log(item['can_trade'], item['rate']))
-                ltc_btc_log_str = "%s %s" % (ltc_btc_log_str, item_log)
 
 
 
@@ -337,8 +286,6 @@ class ThreeBody(object):
             Log.info("%s %s" % (Log.green('ltc'), ltc_log_str))
         if btc_log_str != '':
             Log.info("%s %s" % (Log.green("btc"), btc_log_str))
-        if ltc_btc_log_str != '':
-            Log.info("%s %s" % (Log.green("ltc_btc"), ltc_btc_log_str))
 
         self.total_status['current_status'] = self.status_list
 
@@ -401,9 +348,6 @@ class ThreeBody(object):
                 src_trade = getattr(self, src)
                 dst_trade = getattr(self, dst)
             
-                if type == 'ltc_btc':
-                    return
-
                 flow_control = self._get_flow_control(type)
                 flow_low = flow_control.get(item['direct'], None)
                 amount = flow_low and flow_low[1] or flow_control['default'][1]
