@@ -20,6 +20,8 @@ from lib.log import *
 from config import accounts
 import logging
 
+requests.packages.urllib3.disable_warnings()
+
 IGNORE_WORD = ['__builtins__', '__file__', '__package__', '__name__', '__doc__',]
 class ThreeBody(object):
 
